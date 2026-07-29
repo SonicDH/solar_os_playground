@@ -37,6 +37,54 @@
         "starter"
       ],
       "version": "1.0.0"
+    },
+    {
+      "archive": "packages/snake-lua/1.0.0/snake-lua-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "games",
+      "description": "Classic Snake with keyboard controls, sound, and scalable graphics.",
+      "entry": "snake.lua",
+      "id": "snake-lua",
+      "min_solaros": "4.4.0",
+      "name": "Snake (Lua)",
+      "requires": [
+        "audio",
+        "gfx"
+      ],
+      "runtime": "lua",
+      "sha256": "1bc64c6596fbc68051c919300d881c75809b2835f98ef0478db1f2c8671ab0ac",
+      "size": 2711,
+      "tags": [
+        "arcade",
+        "game",
+        "lua",
+        "snake"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "archive": "packages/snake-python/1.0.0/snake-python-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "games",
+      "description": "Classic Snake with keyboard controls, sound, and scalable graphics.",
+      "entry": "snake.py",
+      "id": "snake-python",
+      "min_solaros": "4.4.0",
+      "name": "Snake (Python)",
+      "requires": [
+        "audio",
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "287fe7ea2cc5ad33c1929408e1734d0a219faaf53e8ae66bd9fc19917f0cf8d3",
+      "size": 2642,
+      "tags": [
+        "arcade",
+        "game",
+        "python",
+        "snake"
+      ],
+      "version": "1.0.0"
     }
   ],
   "categories": [

@@ -1,0 +1,13 @@
+{
+  "id": "snake-lua",
+  "name": "Snake (Lua)",
+  "version": "1.0.0",
+  "runtime": "lua",
+  "entry": "snake.lua",
+  "category": "games",
+  "description": "Classic Snake with keyboard controls, sound, and scalable graphics.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["arcade", "game", "snake", "lua"],
+  "requires": ["audio", "gfx"]
+}
