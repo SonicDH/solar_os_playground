@@ -1,0 +1,75 @@
+{
+  "apps": [
+    {
+      "archive": "packages/hello-lua/1.0.0/hello-lua-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "examples",
+      "description": "A minimal SolarOS Lua application.",
+      "entry": "main.lua",
+      "id": "hello-lua",
+      "min_solaros": "4.4.0",
+      "name": "Hello Lua",
+      "requires": [],
+      "runtime": "lua",
+      "sha256": "903acb38d28b762eba1652c5a8e7cb1b908c6b89bfd542ca3125f77510223723",
+      "size": 639,
+      "tags": [
+        "hello",
+        "starter"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "archive": "packages/hello-python/1.0.0/hello-python-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "examples",
+      "description": "A minimal SolarOS Python application.",
+      "entry": "main.py",
+      "id": "hello-python",
+      "min_solaros": "4.4.0",
+      "name": "Hello Python",
+      "requires": [],
+      "runtime": "python",
+      "sha256": "ca79f17ae358f4efc19e70225004aebd855ef253785046fb158f19206f756571",
+      "size": 645,
+      "tags": [
+        "hello",
+        "starter"
+      ],
+      "version": "1.0.0"
+    }
+  ],
+  "categories": [
+    {
+      "id": "games",
+      "order": 10,
+      "title": "Games"
+    },
+    {
+      "id": "utilities",
+      "order": 20,
+      "title": "Utilities"
+    },
+    {
+      "id": "hacking",
+      "order": 30,
+      "title": "Hacking"
+    },
+    {
+      "id": "development",
+      "order": 40,
+      "title": "Development"
+    },
+    {
+      "id": "examples",
+      "order": 50,
+      "title": "Examples"
+    }
+  ],
+  "repository": {
+    "id": "solar-os-playground",
+    "name": "SolarOS Playground"
+  },
+  "schema": "solaros.playground.catalog",
+  "schema_version": 1
+}

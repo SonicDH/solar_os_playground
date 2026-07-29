@@ -1,0 +1,13 @@
+{
+  "id": "hello-python",
+  "name": "Hello Python",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "main.py",
+  "category": "examples",
+  "description": "A minimal SolarOS Python application.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["hello", "starter"],
+  "requires": []
+}

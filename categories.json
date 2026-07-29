@@ -1,0 +1,9 @@
+{
+  "categories": [
+    {"id": "games", "title": "Games", "order": 10},
+    {"id": "utilities", "title": "Utilities", "order": 20},
+    {"id": "hacking", "title": "Hacking", "order": 30},
+    {"id": "development", "title": "Development", "order": 40},
+    {"id": "examples", "title": "Examples", "order": 50}
+  ]
+}

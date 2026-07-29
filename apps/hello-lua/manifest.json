@@ -1,0 +1,13 @@
+{
+  "id": "hello-lua",
+  "name": "Hello Lua",
+  "version": "1.0.0",
+  "runtime": "lua",
+  "entry": "main.lua",
+  "category": "examples",
+  "description": "A minimal SolarOS Lua application.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["hello", "starter"],
+  "requires": []
+}
