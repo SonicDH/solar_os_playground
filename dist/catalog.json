@@ -39,6 +39,52 @@
       "version": "1.0.0"
     },
     {
+      "archive": "packages/mandelbrot-lua/1.0.0/mandelbrot-lua-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "examples",
+      "description": "Renders the Mandelbrot set on the graphic display.",
+      "entry": "mandelbrot.lua",
+      "id": "mandelbrot-lua",
+      "min_solaros": "4.4.0",
+      "name": "Mandelbrot (Lua)",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "lua",
+      "sha256": "747a195aa646786ea800c07cd4261d745aa2dac3d105e3db3afeecc3bbacc036",
+      "size": 1090,
+      "tags": [
+        "fractal",
+        "graphics",
+        "lua",
+        "mandelbrot"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "archive": "packages/mandelbrot-python/1.0.0/mandelbrot-python-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "examples",
+      "description": "Renders the Mandelbrot set on the graphic display.",
+      "entry": "mandelbrot.py",
+      "id": "mandelbrot-python",
+      "min_solaros": "4.4.0",
+      "name": "Mandelbrot (Python)",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "43fc83c5448955b418641221ee3b748ceccd8f062add9ba52159cf3d60f9b6f0",
+      "size": 1499,
+      "tags": [
+        "fractal",
+        "graphics",
+        "mandelbrot",
+        "python"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "archive": "packages/snake-lua/1.0.0/snake-lua-1.0.0.sopkg",
       "author": "SolarOS",
       "category": "games",

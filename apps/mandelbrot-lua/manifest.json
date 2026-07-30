@@ -1,0 +1,13 @@
+{
+  "id": "mandelbrot-lua",
+  "name": "Mandelbrot (Lua)",
+  "version": "1.0.0",
+  "runtime": "lua",
+  "entry": "mandelbrot.lua",
+  "category": "examples",
+  "description": "Renders the Mandelbrot set on the graphic display.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["fractal", "graphics", "lua", "mandelbrot"],
+  "requires": ["gfx"]
+}

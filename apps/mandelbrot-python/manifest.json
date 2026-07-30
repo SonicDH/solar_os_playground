@@ -1,0 +1,13 @@
+{
+  "id": "mandelbrot-python",
+  "name": "Mandelbrot (Python)",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "mandelbrot.py",
+  "category": "examples",
+  "description": "Renders the Mandelbrot set on the graphic display.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["fractal", "graphics", "mandelbrot", "python"],
+  "requires": ["gfx"]
+}
