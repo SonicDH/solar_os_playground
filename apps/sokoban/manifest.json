@@ -1,0 +1,13 @@
+{
+  "id": "sokoban",
+  "name": "Sokoban",
+  "version": "1.1.0",
+  "runtime": "lua",
+  "entry": "sokoban.lua",
+  "category": "games",
+  "description": "Turn-based box-pushing puzzles designed for reflective displays.",
+  "author": "SolarOS",
+  "min_solaros": "4.6.7",
+  "tags": ["boxes", "e-paper", "lua", "puzzle", "sokoban"],
+  "requires": ["gfx"]
+}

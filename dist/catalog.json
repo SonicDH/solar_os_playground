@@ -131,6 +131,30 @@
         "snake"
       ],
       "version": "1.0.0"
+    },
+    {
+      "archive": "packages/sokoban/1.1.0/sokoban-1.1.0.sopkg",
+      "author": "SolarOS",
+      "category": "games",
+      "description": "Turn-based box-pushing puzzles designed for reflective displays.",
+      "entry": "sokoban.lua",
+      "id": "sokoban",
+      "min_solaros": "4.6.7",
+      "name": "Sokoban",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "lua",
+      "sha256": "d5c02a1a5843de9511ed13dab320963e01922c0e706691c73bfdaa24b2777282",
+      "size": 4122,
+      "tags": [
+        "boxes",
+        "e-paper",
+        "lua",
+        "puzzle",
+        "sokoban"
+      ],
+      "version": "1.1.0"
     }
   ],
   "categories": [
