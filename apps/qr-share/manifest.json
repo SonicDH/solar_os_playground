@@ -1,0 +1,13 @@
+{
+  "id": "qr-share",
+  "name": "QR Share",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "qrshare.py",
+  "category": "utilities",
+  "description": "Show an SSH public key, text, or a small file as a scannable QR code.",
+  "author": "SolarOS",
+  "min_solaros": "4.6.8",
+  "tags": ["e-paper", "qr", "share", "ssh", "utility"],
+  "requires": ["gfx"]
+}

@@ -145,8 +145,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "d5c02a1a5843de9511ed13dab320963e01922c0e706691c73bfdaa24b2777282",
-      "size": 4122,
+      "sha256": "e6aa30fc02cb26da0467608ef42f40f8c17fb0212c71dfb75b6bb5c28acc8f01",
+      "size": 4126,
       "tags": [
         "boxes",
         "e-paper",
@@ -155,6 +155,30 @@
         "sokoban"
       ],
       "version": "1.1.0"
+    },
+    {
+      "archive": "packages/qr-share/1.0.0/qr-share-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "utilities",
+      "description": "Show an SSH public key, text, or a small file as a scannable QR code.",
+      "entry": "qrshare.py",
+      "id": "qr-share",
+      "min_solaros": "4.6.8",
+      "name": "QR Share",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "4af4872a2c68445a4dd23920b792059e66684ca91c86be8b98ef6a6039a896d0",
+      "size": 5663,
+      "tags": [
+        "e-paper",
+        "qr",
+        "share",
+        "ssh",
+        "utility"
+      ],
+      "version": "1.0.0"
     }
   ],
   "categories": [
