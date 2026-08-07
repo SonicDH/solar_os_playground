@@ -46,3 +46,14 @@ including `display`, `gfx`, `cdc`, `uart`, `sd`, `i2c`, `spi`, `rtc`,
 The generator enforces the firmware's catalog sizes and text limits, creates a
 deterministic `.sopkg` ZIP, and writes its exact size and SHA-256 into
 `dist/catalog.json`.
+
+## Script command-line convention
+
+An application that accepts one primary input file should use `--file PATH`.
+This option is optional for applications that do not consume files. SolarOS
+recognizes the exact `--file` token after `playground run APP-ID` and completes
+filesystem paths for its following argument.
+
+Document the option in the application's README when it is supported. No
+manifest field is required; arguments after the application ID are forwarded
+unchanged to Python through `sys.argv` or to Lua through `arg`.
