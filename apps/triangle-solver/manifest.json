@@ -1,0 +1,13 @@
+{
+  "id": "triangle-solver",
+  "name": "Triangle Solver",
+  "version": "1.0.0",
+  "runtime": "lua",
+  "entry": "triangle.lua",
+  "category": "science",
+  "description": "Solve triangle side lengths and internal angles from any three valid measurements.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["angles", "geometry", "science", "triangle", "trigonometry"],
+  "requires": ["gfx"]
+}

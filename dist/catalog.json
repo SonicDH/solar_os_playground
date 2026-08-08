@@ -157,6 +157,30 @@
       "version": "1.1.0"
     },
     {
+      "archive": "packages/triangle-solver/1.0.0/triangle-solver-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "science",
+      "description": "Solve triangle side lengths and internal angles from any three valid measurements.",
+      "entry": "triangle.lua",
+      "id": "triangle-solver",
+      "min_solaros": "4.4.0",
+      "name": "Triangle Solver",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "lua",
+      "sha256": "5986ae138473d45316f83a721943f4eb15cedc29b918c322aa8498e20e3f208f",
+      "size": 4869,
+      "tags": [
+        "angles",
+        "geometry",
+        "science",
+        "triangle",
+        "trigonometry"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "archive": "packages/qr-share/1.0.0/qr-share-1.0.0.sopkg",
       "author": "SolarOS",
       "category": "utilities",
@@ -191,6 +215,11 @@
       "id": "utilities",
       "order": 20,
       "title": "Utilities"
+    },
+    {
+      "id": "science",
+      "order": 25,
+      "title": "Science"
     },
     {
       "id": "hacking",
