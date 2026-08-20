@@ -1,0 +1,13 @@
+{
+  "id": "weather",
+  "name": "Weather",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "weather.py",
+  "category": "utilities",
+  "description": "Shows local conditions and Open-Meteo temperature and precipitation forecasts.",
+  "author": "SolarOS",
+  "min_solaros": "4.8.4",
+  "tags": ["forecast", "open-meteo", "sensors", "weather"],
+  "requires": ["gfx", "wifi"]
+}

@@ -203,6 +203,30 @@
         "utility"
       ],
       "version": "1.0.0"
+    },
+    {
+      "archive": "packages/weather/1.0.0/weather-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "utilities",
+      "description": "Shows local conditions and Open-Meteo temperature and precipitation forecasts.",
+      "entry": "weather.py",
+      "id": "weather",
+      "min_solaros": "4.8.4",
+      "name": "Weather",
+      "requires": [
+        "gfx",
+        "wifi"
+      ],
+      "runtime": "python",
+      "sha256": "2225fc16a7143d6a955c6c96addf148c795553fce47e7208aac1997274c22c51",
+      "size": 7938,
+      "tags": [
+        "forecast",
+        "open-meteo",
+        "sensors",
+        "weather"
+      ],
+      "version": "1.0.0"
     }
   ],
   "categories": [
