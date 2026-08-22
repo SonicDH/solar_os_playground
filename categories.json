@@ -1,6 +1,7 @@
 {
   "categories": [
     {"id": "games", "title": "Games", "order": 10},
+    {"id": "music", "title": "Music", "order": 15},
     {"id": "utilities", "title": "Utilities", "order": 20},
     {"id": "science", "title": "Science", "order": 25},
     {"id": "hacking", "title": "Hacking", "order": 30},

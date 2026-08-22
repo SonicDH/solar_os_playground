@@ -157,6 +157,31 @@
       "version": "1.1.0"
     },
     {
+      "archive": "packages/chromatic-tuner/1.0.0/chromatic-tuner-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "music",
+      "description": "Shows the nearest chromatic note and tuning deviation in cents.",
+      "entry": "tuner.py",
+      "id": "chromatic-tuner",
+      "min_solaros": "4.8.9",
+      "name": "Chromatic Tuner",
+      "requires": [
+        "audio_input",
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "7f7b8d5b4abd638563bbc18e75219978b1441ad07337905fc73bce9fec721c55",
+      "size": 6365,
+      "tags": [
+        "audio",
+        "chromatic",
+        "music",
+        "pitch",
+        "tuner"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "archive": "packages/triangle-solver/1.0.0/triangle-solver-1.0.0.sopkg",
       "author": "SolarOS",
       "category": "science",
@@ -234,6 +259,11 @@
       "id": "games",
       "order": 10,
       "title": "Games"
+    },
+    {
+      "id": "music",
+      "order": 15,
+      "title": "Music"
     },
     {
       "id": "utilities",

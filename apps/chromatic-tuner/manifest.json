@@ -1,0 +1,13 @@
+{
+  "id": "chromatic-tuner",
+  "name": "Chromatic Tuner",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "tuner.py",
+  "category": "music",
+  "description": "Shows the nearest chromatic note and tuning deviation in cents.",
+  "author": "SolarOS",
+  "min_solaros": "4.8.9",
+  "tags": ["audio", "chromatic", "music", "pitch", "tuner"],
+  "requires": ["audio_input", "gfx"]
+}
