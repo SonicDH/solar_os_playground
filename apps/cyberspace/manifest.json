@@ -1,0 +1,13 @@
+{
+  "id": "cyberspace",
+  "name": "Cyberspace",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "main.py",
+  "category": "social",
+  "description": "Human-operated TUI client for Cyberspace social, journal, mail, and chat workflows.",
+  "author": "SolarOS",
+  "min_solaros": "4.8.9",
+  "tags": ["chat", "cyberspace", "social", "tui"],
+  "requires": ["wifi"]
+}

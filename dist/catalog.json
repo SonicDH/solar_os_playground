@@ -206,6 +206,29 @@
       "version": "1.0.0"
     },
     {
+      "archive": "packages/cyberspace/1.0.0/cyberspace-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "social",
+      "description": "Human-operated TUI client for Cyberspace social, journal, mail, and chat workflows.",
+      "entry": "main.py",
+      "id": "cyberspace",
+      "min_solaros": "4.8.9",
+      "name": "Cyberspace",
+      "requires": [
+        "wifi"
+      ],
+      "runtime": "python",
+      "sha256": "058069884e2f8eaffa2860b63a0f3436a3b61445ab5e191e47f97ad493862bb0",
+      "size": 37572,
+      "tags": [
+        "chat",
+        "cyberspace",
+        "social",
+        "tui"
+      ],
+      "version": "1.0.0"
+    },
+    {
       "archive": "packages/qr-share/1.0.0/qr-share-1.0.0.sopkg",
       "author": "SolarOS",
       "category": "utilities",
@@ -264,6 +287,11 @@
       "id": "music",
       "order": 15,
       "title": "Music"
+    },
+    {
+      "id": "social",
+      "order": 18,
+      "title": "Social"
     },
     {
       "id": "utilities",

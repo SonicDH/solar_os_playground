@@ -2,6 +2,7 @@
   "categories": [
     {"id": "games", "title": "Games", "order": 10},
     {"id": "music", "title": "Music", "order": 15},
+    {"id": "social", "title": "Social", "order": 18},
     {"id": "utilities", "title": "Utilities", "order": 20},
     {"id": "science", "title": "Science", "order": 25},
     {"id": "hacking", "title": "Hacking", "order": 30},
