@@ -200,6 +200,16 @@ class Controller:
         result = self.select(title, labels, help_text)
         return result.get("value") if result else None
 
+    def _append_more(self, items, load_more):
+        added = load_more() if load_more is not None else []
+        if added:
+            first = len(items)
+            items.extend(added)
+            self.status = "loaded more"
+            return first
+        self.status = "end"
+        return None
+
     def select(self, title, items, help_text, extras="", formatter=item_title,
                refresh=None, load_more=None):
         cursor = 0
@@ -251,20 +261,20 @@ class Controller:
                 return None
             self._global_key(key)
             if key == tui.KEY_DOWN or key == KEY_J:
-                cursor = min(max(0, len(items) - 1), cursor + 1)
+                if cursor < len(items) - 1:
+                    cursor += 1
+                elif load_more is not None:
+                    first = self._append_more(items, load_more)
+                    if first is not None:
+                        cursor = first
+                    content_changed = True
             elif key == tui.KEY_UP or key == KEY_K:
                 cursor = max(0, cursor - 1)
             elif key == tui.KEY_PAGE_DOWN:
                 if load_more is not None:
-                    added = load_more()
-                    if added:
-                        items.extend(added)
-                        self.status = "loaded more"
-                    else:
-                        self.status = "end"
+                    self._append_more(items, load_more)
                     content_changed = True
-                else:
-                    cursor = min(max(0, len(items) - 1), cursor + body_rows)
+                cursor = min(max(0, len(items) - 1), cursor + body_rows)
             elif key == tui.KEY_PAGE_UP:
                 cursor = max(0, cursor - body_rows)
             elif key in KEY_ENTER and items:
@@ -409,20 +419,21 @@ class Controller:
             self._global_key(key)
             old_cursor = cursor
             if key == tui.KEY_DOWN or key == KEY_J:
-                cursor = min(max(0, len(items) - 1), cursor + 1)
+                if cursor < len(items) - 1:
+                    cursor += 1
+                elif load_more is not None:
+                    first = self._append_more(items, load_more)
+                    if first is not None:
+                        cursor = first
+                    dirty = True
             elif key == tui.KEY_UP or key == KEY_K:
                 cursor = max(0, cursor - 1)
             elif key == tui.KEY_PAGE_DOWN:
                 if load_more is not None:
-                    added = load_more()
-                    if added:
-                        items.extend(added)
-                        self.status = "loaded more"
-                    else:
-                        self.status = "end"
+                    self._append_more(items, load_more)
                     dirty = True
-                else:
-                    cursor = min(max(0, len(items) - 1), cursor + len(positions))
+                cursor = min(max(0, len(items) - 1),
+                             cursor + max(1, len(positions)))
             elif key == tui.KEY_PAGE_UP:
                 cursor = max(0, cursor - max(1, len(positions)))
             elif key in KEY_ENTER and items:
@@ -927,9 +938,9 @@ class Controller:
         topic = self.select("Topics", rows, "Enter feed  Esc back")
         if topic:
             slug = topic.get("slug") or topic.get("name")
-            result = self.paged_select("#" + slug,
-                                       lambda cursor: self.client.topic_posts(slug, cursor),
-                                       "Enter open  Esc back")
+            result = self.paged_card_select(
+                "#" + slug, lambda cursor: self.client.topic_posts(slug, cursor),
+                "Enter open  Esc back", post_card)
             if result:
                 self.post_detail(result.get("postId"), result)
 

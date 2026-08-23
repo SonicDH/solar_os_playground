@@ -490,6 +490,97 @@ class MenuRedrawTest(unittest.TestCase):
         self.assertTrue(all(len(text) < 20 for text in row_updates))
 
 
+class PagedNavigationTest(unittest.TestCase):
+    class FakeTUI(LoginFormTest.FakeTUI):
+        BOLD = 2
+        UNDERLINE = 4
+        KEY_PAGE_UP = 265
+        KEY_PAGE_DOWN = 266
+        KEY_CTRL_LEFT = 0xA1
+        KEY_CTRL_RIGHT = 0xA2
+
+    def controller(self, keys, client=None):
+        fake_tui = self.FakeTUI(keys, (13, 36))
+        fake_solaros = type("FakeSolaros", (), {
+            "tui": fake_tui,
+            "should_exit": staticmethod(lambda: False),
+        })
+        previous_solaros = sys.modules.get("solaros")
+        previous_ui = sys.modules.pop("cyber_ui", None)
+        sys.modules["solaros"] = fake_solaros
+        import cyber_ui
+
+        def restore():
+            sys.modules.pop("cyber_ui", None)
+            if previous_ui is not None:
+                sys.modules["cyber_ui"] = previous_ui
+            if previous_solaros is None:
+                del sys.modules["solaros"]
+            else:
+                sys.modules["solaros"] = previous_solaros
+
+        self.addCleanup(restore)
+        return cyber_ui, cyber_ui.Controller(client), fake_tui
+
+    @staticmethod
+    def card(item, _width):
+        return [[(item["name"], "normal")]]
+
+    def test_down_at_last_card_loads_and_selects_next_page(self):
+        cyber_ui, controller, _ = self.controller([
+            self.FakeTUI.KEY_DOWN, 13,
+        ])
+        load_more = mock.Mock(return_value=[{"name": "two"}])
+        result = controller.card_select(
+            "Cards", [{"name": "one"}], "Esc back", self.card,
+            load_more=load_more)
+        self.assertEqual(result["name"], "two")
+        load_more.assert_called_once_with()
+
+    def test_page_down_loads_and_advances_from_current_card(self):
+        _, controller, _ = self.controller([
+            self.FakeTUI.KEY_DOWN, self.FakeTUI.KEY_PAGE_DOWN, 13,
+        ])
+        load_more = mock.Mock(return_value=[{"name": "three"}, {"name": "four"}])
+        result = controller.card_select(
+            "Cards", [{"name": "one"}, {"name": "two"}],
+            "Esc back", self.card, load_more=load_more)
+        self.assertEqual(result["name"], "four")
+        load_more.assert_called_once_with()
+
+    def test_down_at_last_plain_row_loads_and_selects_next_page(self):
+        _, controller, _ = self.controller([
+            self.FakeTUI.KEY_DOWN, 13,
+        ])
+        load_more = mock.Mock(return_value=[{"name": "two"}])
+        result = controller.select(
+            "Rows", [{"name": "one"}], "Esc back", load_more=load_more)
+        self.assertEqual(result["name"], "two")
+        load_more.assert_called_once_with()
+
+    def test_topic_posts_use_the_feed_card_renderer(self):
+        class Client:
+            @staticmethod
+            def topics():
+                return {"data": [{"slug": "solar"}]}
+
+            @staticmethod
+            def topic_posts(slug, cursor):
+                return {"data": [{"postId": "p1"}], "cursor": None,
+                        "slug": slug, "requested_cursor": cursor}
+
+        cyber_ui, controller, _ = self.controller([], Client())
+        with mock.patch.object(controller, "select",
+                               return_value={"slug": "solar"}), \
+                mock.patch.object(controller, "paged_card_select",
+                                  return_value=None) as paged:
+            controller.screen_topics()
+        self.assertIs(paged.call_args.args[3], cyber_ui.post_card)
+        document = paged.call_args.args[1]("next")
+        self.assertEqual((document["slug"], document["requested_cursor"]),
+                         ("solar", "next"))
+
+
 class ThreadReaderTest(unittest.TestCase):
     def test_enter_on_thread_post_opens_scrollable_full_text_reader(self):
         fake_tui = LoginFormTest.FakeTUI([])

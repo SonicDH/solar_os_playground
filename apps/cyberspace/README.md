@@ -48,7 +48,7 @@ currently selected post or reply card.
 
 Common controls:
 
-- Arrow keys or `j`/`k`: move or scroll
+- Arrow keys or `j`/`k`: move or scroll; Down loads the next page at the end
 - Enter: open or select
 - Ctrl-Left/Ctrl-Right: change tabs from any tab view
 - Escape: go back
@@ -56,7 +56,7 @@ Common controls:
 - `r`: reply to the selected feed/thread card, or refresh where shown
 - `n`: create an entry, note, thread, or conversation where available
 - `/`: search from the feed
-- Page Down: request the next bounded page
+- Page Down: request the next bounded page and move forward one visible page
 
 Action keys shown in the footer expose bookmark/watch/report/edit/delete,
 profile, guild, notification, note-revision, attachment-copy, presence, and
