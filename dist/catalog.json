@@ -206,7 +206,7 @@
       "version": "1.0.0"
     },
     {
-      "archive": "packages/bluesky/1.3.0/bluesky-1.3.0.sopkg",
+      "archive": "packages/bluesky/1.3.1/bluesky-1.3.1.sopkg",
       "author": "Victor Khaze",
       "category": "social",
       "description": "Text Bluesky client with timelines, threads, profiles, interactions, posting, and direct messages.",
@@ -218,8 +218,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "4db3816e308da819e376619464920d0bfeb28874a6344cd42f3bdd247e9905ed",
-      "size": 12088,
+      "sha256": "942a0695faa53738b3046673d96dc31712b59af877036b428ca7285d58f618db",
+      "size": 12531,
       "tags": [
         "atproto",
         "bluesky",
@@ -227,7 +227,7 @@
         "social",
         "tui"
       ],
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     {
       "archive": "packages/cyberspace/1.1.0/cyberspace-1.1.0.sopkg",

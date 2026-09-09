@@ -671,6 +671,40 @@ def post_summary(item):
     return name, handle, text
 
 
+def post_reader_lines(item, thread_posts, width):
+    unused_name, unused_handle, text = post_summary(item)
+    lines = wrap(text, width)
+    uri = item.get("post", {}).get("uri", "")
+    target = -1
+    for index, candidate in enumerate(thread_posts):
+        if candidate.get("post", {}).get("uri") == uri:
+            target = index
+            break
+    replies = []
+    if target >= 0:
+        base_depth = thread_posts[target].get("_depth", 0)
+        for candidate in thread_posts[target + 1:]:
+            depth = candidate.get("_depth", 0)
+            if depth <= base_depth:
+                break
+            replies.append(candidate)
+    lines.extend(["", "Replies"])
+    if not replies:
+        lines.append("  No replies loaded.")
+        return lines
+    for reply in replies:
+        unused_name, handle, reply_text = post_summary(reply)
+        depth = max(1, reply.get("_depth", 1))
+        indent = " " * min(8, depth * 2)
+        lines.append(indent + "@" + (handle or "unknown"))
+        for part in wrap(reply_text, max(1, width - len(indent) - 2)):
+            lines.append(indent + "  " + part)
+        lines.append("")
+    if lines and not lines[-1]:
+        lines.pop()
+    return lines
+
+
 def timeline_item_height(item, cols, full_text):
     if not full_text:
         return 3
@@ -759,11 +793,13 @@ def show_thread(client, item, options=None):
     show_message("Thread", "Loading conversation...", "Please wait")
     posts = client.post_thread(uri)
     selected = 0
+    note = "{} posts".format(len(posts))
     dirty = True
     while not solaros.should_exit():
         if dirty:
-            draw_timeline(posts, selected, "{} posts".format(len(posts)),
+            draw_timeline(posts, selected, note,
                           "Thread", "Enter open  a reply  p profile  Esc back")
+            note = ""
             dirty = False
         key = tui.getch(250)
         if key is None:
@@ -787,7 +823,10 @@ def show_thread(client, item, options=None):
                 show_author_feed(client, handle, options)
             dirty = True
         elif key == ord("a") and posts:
-            reply_to_post(client, posts[selected])
+            note = reply_to_post(client, posts[selected])
+            if note:
+                posts = client.post_thread(uri)
+                selected = min(selected, max(0, len(posts) - 1))
             dirty = True
 
 
@@ -879,12 +918,25 @@ def reply_to_post(client, item):
 
 
 def show_post(client, item):
-    name, handle, text = post_summary(item)
-    post = item.get("post", {})
     rows, cols = tui.size()
-    lines = wrap(text, cols - 2)
+    uri = item.get("post", {}).get("uri", "")
+    thread_posts = []
+    load_note = ""
+    if uri:
+        show_message("BlueSky", "Loading replies...", "Please wait")
+        try:
+            thread_posts = client.post_thread(uri)
+            for candidate in thread_posts:
+                if candidate.get("post", {}).get("uri") == uri:
+                    item = candidate
+                    break
+        except Exception as error:
+            load_note = "replies unavailable: " + clean_text(str(error))
+    name, handle, unused_text = post_summary(item)
+    post = item.get("post", {})
+    lines = post_reader_lines(item, thread_posts, cols - 2)
     offset = 0
-    note = ""
+    note = load_note
     dirty = True
     while not solaros.should_exit():
         if dirty:
@@ -908,7 +960,7 @@ def show_post(client, item):
                        clip("{}{} likes  {}{} reposts  {} replies".format(
                            markers[0], counts[0], markers[1], counts[1], counts[2]), cols - 2))
             tui.addstr(rows - 1, 0,
-                       clip("Up/Down  a reply  l like  b repost  Esc back", cols),
+                       clip("Up/Down  a reply  t thread  l like  b repost", cols),
                        tui.INVERSE)
             tui.refresh()
             dirty = False
@@ -929,6 +981,20 @@ def show_post(client, item):
             dirty = True
         elif key == ord("a"):
             note = reply_to_post(client, item)
+            if note and uri:
+                try:
+                    thread_posts = client.post_thread(uri)
+                    for candidate in thread_posts:
+                        if candidate.get("post", {}).get("uri") == uri:
+                            item = candidate
+                            post = item.get("post", {})
+                            break
+                    lines = post_reader_lines(item, thread_posts, cols - 2)
+                except Exception:
+                    pass
+            dirty = True
+        elif key == ord("t"):
+            show_thread(client, item)
             dirty = True
 
 
