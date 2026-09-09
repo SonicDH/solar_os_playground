@@ -14,6 +14,7 @@ personal data servers (PDSes).
 - Open complete posts and conversation threads.
 - Browse an author's profile timeline or enter any handle.
 - Compose text posts.
+- Reply to posts from Home, profiles, threads, or the complete post view.
 - Like/unlike directly from Home and profile timelines, or from the complete
   post view; repost/unrepost from the complete post view.
 - Read accepted direct and group conversations, start one-to-one
@@ -53,6 +54,7 @@ playground run bluesky --login
 - `v`: toggle compact or full-text display in Home and profile timelines.
 - `n`: load the next timeline page.
 - `c`: compose a post; Ctrl-D submits multiline text.
+- `a`: reply to the selected post; Ctrl-D submits multiline text.
 - `p`: open the selected author's timeline.
 - `u`: enter a handle and open that user's timeline.
 - `t`: open the selected post's thread.

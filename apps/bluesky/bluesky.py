@@ -292,6 +292,17 @@ def compact_timeline_item(item):
     author = post.get("author", {})
     record = post.get("record", {})
     viewer = post.get("viewer", {})
+    compact_record = {"text": record.get("text", "")}
+    reply = record.get("reply", {})
+    if isinstance(reply, dict):
+        root_ref = reply.get("root", {})
+        parent_ref = reply.get("parent", {})
+        if (root_ref.get("uri") and root_ref.get("cid") and
+                parent_ref.get("uri") and parent_ref.get("cid")):
+            compact_record["reply"] = {
+                "root": {"uri": root_ref["uri"], "cid": root_ref["cid"]},
+                "parent": {"uri": parent_ref["uri"], "cid": parent_ref["cid"]},
+            }
     compact = {
         "post": {
             "uri": post.get("uri", ""),
@@ -300,7 +311,7 @@ def compact_timeline_item(item):
                 "displayName": author.get("displayName", ""),
                 "handle": author.get("handle", ""),
             },
-            "record": {"text": record.get("text", "")},
+            "record": compact_record,
             "likeCount": post.get("likeCount", 0),
             "repostCount": post.get("repostCount", 0),
             "replyCount": post.get("replyCount", 0),
@@ -508,6 +519,27 @@ class Client:
                 "record": record,
             },
         )
+
+    def create_reply(self, item, text):
+        post = item.get("post", {})
+        uri = post.get("uri", "")
+        cid = post.get("cid", "")
+        if not uri or not cid:
+            raise RuntimeError("This post has no complete AT Protocol reference")
+        parent = {"uri": uri, "cid": cid}
+        existing = post.get("record", {}).get("reply", {})
+        root_ref = existing.get("root", {}) if isinstance(existing, dict) else {}
+        root = ({"uri": root_ref.get("uri"), "cid": root_ref.get("cid")}
+                if root_ref.get("uri") and root_ref.get("cid") else parent)
+        record = {
+            "$type": "app.bsky.feed.post",
+            "text": text,
+            "reply": {"root": root, "parent": parent},
+            "createdAt": utc_timestamp(),
+        }
+        result = self.create_record("app.bsky.feed.post", record)
+        post["replyCount"] = post.get("replyCount", 0) + 1
+        return result
 
     def create_record(self, collection, record):
         return self.post_json(
@@ -731,7 +763,7 @@ def show_thread(client, item, options=None):
     while not solaros.should_exit():
         if dirty:
             draw_timeline(posts, selected, "{} posts".format(len(posts)),
-                          "Thread", "Up/Down Enter open  p profile  Esc back")
+                          "Thread", "Enter open  a reply  p profile  Esc back")
             dirty = False
         key = tui.getch(250)
         if key is None:
@@ -754,6 +786,9 @@ def show_thread(client, item, options=None):
             if handle:
                 show_author_feed(client, handle, options)
             dirty = True
+        elif key == ord("a") and posts:
+            reply_to_post(client, posts[selected])
+            dirty = True
 
 
 def show_author_feed(client, actor, options=None):
@@ -767,7 +802,7 @@ def show_author_feed(client, actor, options=None):
     while not solaros.should_exit():
         if dirty:
             draw_timeline(posts, selected, note, "@" + actor,
-                          "Enter open  l like  v view  t thread  r refresh",
+                          "Enter open  a reply  l like  t thread  r refresh",
                           options["full_text"])
             note = ""
             dirty = False
@@ -795,6 +830,9 @@ def show_author_feed(client, actor, options=None):
         elif key == ord("l") and posts:
             note = toggle_reaction_ui(client, posts[selected], "like")
             dirty = True
+        elif key == ord("a") and posts:
+            note = reply_to_post(client, posts[selected])
+            dirty = True
         elif key == ord("v"):
             options["full_text"] = not options["full_text"]
             save_timeline_mode(options["full_text"])
@@ -819,6 +857,21 @@ def toggle_reaction_ui(client, item, kind):
         active = client.toggle_reaction(item, kind)
         return ("liked" if kind == "like" else "reposted") if active else (
             "like removed" if kind == "like" else "repost removed")
+    except Exception as error:
+        show_message("BlueSky error", str(error), "Press any key")
+        wait_key()
+        return ""
+
+
+def reply_to_post(client, item):
+    handle = item.get("post", {}).get("author", {}).get("handle", "")
+    text = edit_text("Reply", "Reply to @" + handle, "", False, True, 300)
+    if not text:
+        return ""
+    show_message("BlueSky", "Publishing reply...", "Please wait")
+    try:
+        client.create_reply(item, text)
+        return "reply posted"
     except Exception as error:
         show_message("BlueSky error", str(error), "Press any key")
         wait_key()
@@ -855,7 +908,7 @@ def show_post(client, item):
                        clip("{}{} likes  {}{} reposts  {} replies".format(
                            markers[0], counts[0], markers[1], counts[1], counts[2]), cols - 2))
             tui.addstr(rows - 1, 0,
-                       clip("Up/Down scroll  l like  b repost  Esc back", cols),
+                       clip("Up/Down  a reply  l like  b repost  Esc back", cols),
                        tui.INVERSE)
             tui.refresh()
             dirty = False
@@ -873,6 +926,9 @@ def show_post(client, item):
             dirty = True
         elif key == ord("b"):
             note = toggle_reaction_ui(client, item, "repost")
+            dirty = True
+        elif key == ord("a"):
+            note = reply_to_post(client, item)
             dirty = True
 
 
@@ -1183,7 +1239,7 @@ def main():
             if dirty:
                 draw_timeline(
                     feed, selected, note, "BlueSky",
-                    "Enter open  l like  v view  p profile  r refresh",
+                    "Enter open  a reply  l like  p profile  r refresh",
                     options["full_text"])
                 note = ""
                 dirty = False
@@ -1247,6 +1303,9 @@ def main():
                 dirty = True
             elif key == ord("l") and feed:
                 note = toggle_reaction_ui(client, feed[selected], "like")
+                dirty = True
+            elif key == ord("a") and feed:
+                note = reply_to_post(client, feed[selected])
                 dirty = True
             elif key == ord("v"):
                 options["full_text"] = not options["full_text"]
