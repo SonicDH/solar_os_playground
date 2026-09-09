@@ -11,8 +11,8 @@
       "name": "Hello Lua",
       "requires": [],
       "runtime": "lua",
-      "sha256": "903acb38d28b762eba1652c5a8e7cb1b908c6b89bfd542ca3125f77510223723",
-      "size": 639,
+      "sha256": "3ff1db79db51a938c1c0b9b4a3749db5453076dbb7399c21b929c8f474e902e3",
+      "size": 644,
       "tags": [
         "hello",
         "starter"
@@ -30,8 +30,8 @@
       "name": "Hello Python",
       "requires": [],
       "runtime": "python",
-      "sha256": "ca79f17ae358f4efc19e70225004aebd855ef253785046fb158f19206f756571",
-      "size": 645,
+      "sha256": "f772ab0d1291c2afd26c12aad546aa094861c781fed4d97a6ee1bd424094315d",
+      "size": 650,
       "tags": [
         "hello",
         "starter"
@@ -51,8 +51,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "747a195aa646786ea800c07cd4261d745aa2dac3d105e3db3afeecc3bbacc036",
-      "size": 1090,
+      "sha256": "f3022ff3695eaeafa2b1c34b6a43014626026f50cf5f47c5e2b9bf64d1daa222",
+      "size": 1099,
       "tags": [
         "fractal",
         "graphics",
@@ -74,8 +74,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "43fc83c5448955b418641221ee3b748ceccd8f062add9ba52159cf3d60f9b6f0",
-      "size": 1499,
+      "sha256": "bda5aba2642f902d2a1f448f003f2809fac99fa2f78230fc84ac20b951f337e4",
+      "size": 1516,
       "tags": [
         "fractal",
         "graphics",
@@ -98,8 +98,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "1bc64c6596fbc68051c919300d881c75809b2835f98ef0478db1f2c8671ab0ac",
-      "size": 2711,
+      "sha256": "7a94f06a8ab198048be0c77380027705129d3a38191b4f5e84e9bde8c37c9474",
+      "size": 2736,
       "tags": [
         "arcade",
         "game",
@@ -122,8 +122,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "287fe7ea2cc5ad33c1929408e1734d0a219faaf53e8ae66bd9fc19917f0cf8d3",
-      "size": 2642,
+      "sha256": "185765ef152d927e9a1c6831b4d72fc94587e4c2026df85d0ee456a81ee132cc",
+      "size": 2669,
       "tags": [
         "arcade",
         "game",
@@ -145,8 +145,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "e6aa30fc02cb26da0467608ef42f40f8c17fb0212c71dfb75b6bb5c28acc8f01",
-      "size": 4126,
+      "sha256": "7db4d113259d136193e4e7ecabe0b2849ca369c666a455f4d3b5add52073dcb4",
+      "size": 4164,
       "tags": [
         "boxes",
         "e-paper",
@@ -170,8 +170,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "7f7b8d5b4abd638563bbc18e75219978b1441ad07337905fc73bce9fec721c55",
-      "size": 6365,
+      "sha256": "4bd9f1223e3786e19834bde0e916d132673fdb6b77a3c73a36bbbd71c805ec61",
+      "size": 6431,
       "tags": [
         "audio",
         "chromatic",
@@ -194,8 +194,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "5986ae138473d45316f83a721943f4eb15cedc29b918c322aa8498e20e3f208f",
-      "size": 4869,
+      "sha256": "ea76dd214520eacc3a22203463bb6c3ee533de5127a094a34f52913f0b18e234",
+      "size": 4899,
       "tags": [
         "angles",
         "geometry",
@@ -204,6 +204,30 @@
         "trigonometry"
       ],
       "version": "1.0.0"
+    },
+    {
+      "archive": "packages/bluesky/1.2.1/bluesky-1.2.1.sopkg",
+      "author": "Victor Khaze",
+      "category": "social",
+      "description": "Text Bluesky client with timelines, threads, profiles, interactions, posting, and direct messages.",
+      "entry": "bluesky.py",
+      "id": "bluesky",
+      "min_solaros": "4.8.4",
+      "name": "BlueSky",
+      "requires": [
+        "wifi"
+      ],
+      "runtime": "python",
+      "sha256": "46c219eb7dc4f15bdb3153a07022dd51de8dd7a62ee69b99f0b91a98c86e9b38",
+      "size": 11709,
+      "tags": [
+        "atproto",
+        "bluesky",
+        "messages",
+        "social",
+        "tui"
+      ],
+      "version": "1.2.1"
     },
     {
       "archive": "packages/cyberspace/1.1.0/cyberspace-1.1.0.sopkg",
@@ -218,8 +242,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "2d7a64958d1e1f3ed36a8fe48c95abf74cf5babaa992c3266dc71094fdef0a5e",
-      "size": 37687,
+      "sha256": "8042710723ce3d3f29524064b83d6e08747a097e986e0624725cfeb5f204eddf",
+      "size": 37952,
       "tags": [
         "chat",
         "cyberspace",
@@ -227,6 +251,30 @@
         "tui"
       ],
       "version": "1.1.0"
+    },
+    {
+      "archive": "packages/opds/1.0.1/opds-1.0.1.sopkg",
+      "author": "Victor Khaze",
+      "category": "utilities",
+      "description": "Browse and search OPDS book catalogs, keep a reading list, and download Reader-compatible books.",
+      "entry": "opds.py",
+      "id": "opds",
+      "min_solaros": "4.8.4",
+      "name": "OPDS Browser",
+      "requires": [
+        "wifi"
+      ],
+      "runtime": "python",
+      "sha256": "384a5a425b396f50b6a4f23adad693effc420e235468993dce14f6796deace3e",
+      "size": 11368,
+      "tags": [
+        "books",
+        "ebooks",
+        "kavita",
+        "library",
+        "opds"
+      ],
+      "version": "1.0.1"
     },
     {
       "archive": "packages/qr-share/1.0.0/qr-share-1.0.0.sopkg",
@@ -241,8 +289,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "4af4872a2c68445a4dd23920b792059e66684ca91c86be8b98ef6a6039a896d0",
-      "size": 5663,
+      "sha256": "6ce49b323882ffd5237eb50e770e2b7d66b41e82db59d7fbc20fc47f19d09708",
+      "size": 5718,
       "tags": [
         "e-paper",
         "qr",
@@ -251,6 +299,30 @@
         "utility"
       ],
       "version": "1.0.0"
+    },
+    {
+      "archive": "packages/rss/1.0.2/rss-1.0.2.sopkg",
+      "author": "Victor Khaze",
+      "category": "utilities",
+      "description": "Offline-first RSS and Atom reader with aggregate, per-feed, and cached article views.",
+      "entry": "rss.py",
+      "id": "rss",
+      "min_solaros": "4.8.4",
+      "name": "RSS Reader",
+      "requires": [
+        "wifi"
+      ],
+      "runtime": "python",
+      "sha256": "d03297e1b9f552435a54859e9b623bbc314e5557960217a827b6efbb65649b02",
+      "size": 10265,
+      "tags": [
+        "atom",
+        "feeds",
+        "news",
+        "offline",
+        "rss"
+      ],
+      "version": "1.0.2"
     },
     {
       "archive": "packages/weather/1.0.0/weather-1.0.0.sopkg",
@@ -266,8 +338,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "2225fc16a7143d6a955c6c96addf148c795553fce47e7208aac1997274c22c51",
-      "size": 7938,
+      "sha256": "87ebe4c18f06a874b131d3043ec37b379b6b98da505b6d805518e394c20c428f",
+      "size": 7998,
       "tags": [
         "forecast",
         "open-meteo",
@@ -275,6 +347,30 @@
         "weather"
       ],
       "version": "1.0.0"
+    },
+    {
+      "archive": "packages/wikipedia/1.0.2/wikipedia-1.0.2.sopkg",
+      "author": "Victor Khaze",
+      "category": "utilities",
+      "description": "Fast text Wikipedia reader with search, link hopping, bookmarks, cache, and an offline library.",
+      "entry": "wikipedia.py",
+      "id": "wikipedia",
+      "min_solaros": "4.8.4",
+      "name": "Wikipedia Reader",
+      "requires": [
+        "wifi"
+      ],
+      "runtime": "python",
+      "sha256": "ea125a0067063cbdee2f1517d0a7aabc393b7a99ab83fa064b60712f633136d4",
+      "size": 12369,
+      "tags": [
+        "encyclopedia",
+        "offline",
+        "reader",
+        "reference",
+        "wikipedia"
+      ],
+      "version": "1.0.2"
     }
   ],
   "categories": [

@@ -1,0 +1,13 @@
+{
+  "id": "bluesky",
+  "name": "BlueSky",
+  "version": "1.2.1",
+  "runtime": "python",
+  "entry": "bluesky.py",
+  "category": "social",
+  "description": "Text Bluesky client with timelines, threads, profiles, interactions, posting, and direct messages.",
+  "author": "Victor Khaze",
+  "min_solaros": "4.8.4",
+  "tags": ["atproto", "bluesky", "messages", "social", "tui"],
+  "requires": ["wifi"]
+}

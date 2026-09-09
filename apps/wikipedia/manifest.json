@@ -1,0 +1,13 @@
+{
+  "id": "wikipedia",
+  "name": "Wikipedia Reader",
+  "version": "1.0.2",
+  "runtime": "python",
+  "entry": "wikipedia.py",
+  "category": "utilities",
+  "description": "Fast text Wikipedia reader with search, link hopping, bookmarks, cache, and an offline library.",
+  "author": "Victor Khaze",
+  "min_solaros": "4.8.4",
+  "tags": ["encyclopedia", "offline", "reader", "reference", "wikipedia"],
+  "requires": ["wifi"]
+}

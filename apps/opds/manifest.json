@@ -1,0 +1,13 @@
+{
+  "id": "opds",
+  "name": "OPDS Browser",
+  "version": "1.0.1",
+  "runtime": "python",
+  "entry": "opds.py",
+  "category": "utilities",
+  "description": "Browse and search OPDS book catalogs, keep a reading list, and download Reader-compatible books.",
+  "author": "Victor Khaze",
+  "min_solaros": "4.8.4",
+  "tags": ["books", "ebooks", "kavita", "library", "opds"],
+  "requires": ["wifi"]
+}
