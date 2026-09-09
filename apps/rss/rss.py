@@ -263,7 +263,11 @@ def load_article(post):
 
 def decode_entities(text):
     named = {"amp": "&", "lt": "<", "gt": ">", "quot": '"',
-             "apos": "'", "nbsp": " "}
+             "apos": "'", "nbsp": " ", "lsquo": "'", "rsquo": "'",
+             "ldquo": '"', "rdquo": '"', "ndash": "-", "mdash": "--",
+             "hellip": "..."}
+    punctuation = {160: " ", 8216: "'", 8217: "'", 8220: '"',
+                   8221: '"', 8211: "-", 8212: "--", 8230: "..."}
     result = []
     position = 0
     while position < len(text):
@@ -281,7 +285,9 @@ def decode_entities(text):
         if value is None and name.startswith("#"):
             try:
                 number = int(name[2:], 16) if name.startswith("#x") else int(name[1:])
-                value = chr(number)
+                value = punctuation.get(number)
+                if value is None:
+                    value = chr(number)
             except Exception:
                 value = None
         if value is None:
@@ -419,7 +425,12 @@ def markdown_to_text(text):
 
 def rendered_text(value):
     value = value or ""
-    return html_to_text(value) if "<" in value and ">" in value else markdown_to_text(value)
+    rendered = (html_to_text(value) if "<" in value and ">" in value
+                else markdown_to_text(value))
+    # A second bounded pass handles common double-escaped feed content such as
+    # &amp;#8217; without repeatedly expanding malformed or adversarial input.
+    first = decode_entities(rendered)
+    return decode_entities(first) if "&" in first else first
 
 
 def tag_value(block, names):
@@ -579,58 +590,64 @@ def fetch_feed_stream(feed, limit):
 
 
 def parse_feed_file(path, feed, limit):
-    buffer = ""
-    pending = b""
+    buffer = bytearray()
+    lowered = bytearray()
     kind = None
     feed_title = feed.get("title", "") or feed["url"]
     posts = []
     with open(path, "rb") as source:
         while not solaros.should_exit() and len(posts) < limit:
-            chunk = source.read(1024)
+            chunk = source.read(2048)
             if not chunk:
                 break
-            if chunk:
-                text, pending = decode_chunk(pending, chunk)
-                buffer += text
-                lower = buffer.lower()
-                if kind is None:
-                    item_at = lower.find("<item")
-                    entry_at = lower.find("<entry")
-                    candidates = [value for value in (item_at, entry_at) if value >= 0]
-                    if not candidates:
-                        if len(buffer) > 16384:
-                            buffer = buffer[-16384:]
-                        continue
-                    first = min(candidates)
-                    kind = "item" if first == item_at else "entry"
-                    header = buffer[:first]
-                    feed_title = (rendered_text(tag_value(header, ("title",))) or
-                                  feed_title)
-                    buffer = buffer[first:]
-                    lower = buffer.lower()
-                closing = "</" + kind + ">"
-                while len(posts) < limit:
-                    start = lower.find("<" + kind)
-                    if start < 0:
+            buffer.extend(chunk)
+            lowered.extend(chunk.lower())
+            if kind is None:
+                item_at = lowered.find(b"<item")
+                entry_at = lowered.find(b"<entry")
+                candidates = [value for value in (item_at, entry_at) if value >= 0]
+                if not candidates:
+                    if len(buffer) > 16384:
+                        buffer = buffer[-16384:]
+                        lowered = lowered[-16384:]
+                    continue
+                first = min(candidates)
+                kind = "item" if first == item_at else "entry"
+                header, unused = decode_chunk(b"", bytes(buffer[:first]))
+                feed_title = (rendered_text(tag_value(header, ("title",))) or
+                              feed_title)
+                buffer = buffer[first:]
+                lowered = lowered[first:]
+            opening = ("<" + kind).encode("ascii")
+            closing = ("</" + kind + ">").encode("ascii")
+            while len(posts) < limit:
+                start = lowered.find(opening)
+                if start < 0:
+                    if len(buffer) > 32:
                         buffer = buffer[-32:]
-                        break
-                    open_end = lower.find(">", start)
-                    end = lower.find(closing, open_end + 1)
-                    if open_end < 0 or end < 0:
-                        if start > 0:
-                            buffer = buffer[start:]
-                        if len(buffer) > ENTRY_BUFFER_LIMIT:
-                            raise RuntimeError("feed entry is too large")
-                        break
-                    block = buffer[open_end + 1:end]
-                    post = parse_entry(block, kind, feed["url"], feed_title)
-                    save_article(post, post.get("body", ""))
-                    if "body" in post:
-                        del post["body"]
-                    posts.append(post)
-                    buffer = buffer[end + len(closing):]
-                    lower = buffer.lower()
-                    block = None
+                        lowered = lowered[-32:]
+                    break
+                open_end = lowered.find(b">", start)
+                end = lowered.find(closing, open_end + 1)
+                if open_end < 0 or end < 0:
+                    if start > 0:
+                        buffer = buffer[start:]
+                        lowered = lowered[start:]
+                    if len(buffer) > ENTRY_BUFFER_LIMIT:
+                        raise RuntimeError("feed entry is too large")
+                    break
+                block, unused = decode_chunk(
+                    b"", bytes(buffer[open_end + 1:end]))
+                post = parse_entry(block, kind, feed["url"], feed_title)
+                save_article(post, post.get("body", ""))
+                if "body" in post:
+                    del post["body"]
+                posts.append(post)
+                consumed = end + len(closing)
+                buffer = buffer[consumed:]
+                lowered = lowered[consumed:]
+                block = None
+                if len(posts) % 4 == 0:
                     gc.collect()
     if not posts:
         raise RuntimeError("feed contains no readable posts")
