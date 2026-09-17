@@ -1,6 +1,31 @@
 {
   "apps": [
     {
+      "archive": "packages/hex-o-spell/0.1.0/hex-o-spell-0.1.0.sopkg",
+      "author": "Marton Juhasz",
+      "category": "accessibility",
+      "description": "Accessible six-direction BLE keyboard for touchscreens and joysticks.",
+      "entry": "hex_o_spell.py",
+      "id": "hex-o-spell",
+      "min_solaros": "4.11.2",
+      "name": "Hex-O-Spell",
+      "requires": [
+        "ble",
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "f48fec2b65396a8620d32a640589157de6c77aa6c346c2ec98fe1fa57e3b3915",
+      "size": 12181,
+      "tags": [
+        "accessibility",
+        "ble",
+        "joystick",
+        "keyboard",
+        "touch"
+      ],
+      "version": "0.1.0"
+    },
+    {
       "archive": "packages/hello-lua/1.0.0/hello-lua-1.0.0.sopkg",
       "author": "SolarOS",
       "category": "examples",
@@ -681,6 +706,11 @@
       "id": "social",
       "order": 18,
       "title": "Social"
+    },
+    {
+      "id": "accessibility",
+      "order": 19,
+      "title": "Accessibility"
     },
     {
       "id": "utilities",
