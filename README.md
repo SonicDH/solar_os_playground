@@ -29,6 +29,20 @@ capability, and size contract.
 with the normal SolarOS Python or Lua permissions; repository maintainers must
 review contributions accordingly.
 
+## Fix a failing catalog check
+
+GitHub Actions regenerates the catalog and checks that the committed `dist/`
+directory exactly matches the current `apps/` and `categories.json` contents.
+If the check reports `dist output is stale`, regenerate the distribution from
+the repository root and commit the result to your pull request branch:
+
+```sh
+python3 scripts/build_catalog.py
+git status
+git add dist/
+git commit -m "Regenerate catalog distribution"
+```
+
 ## Repository URL
 
 SolarOS uses:
