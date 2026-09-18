@@ -12,6 +12,10 @@ ROW_H = 42
 INFO_ROW_H = 25
 KEY_ENTER = 13
 KEY_LF = 10
+KEY_BACKSPACE = 8
+KEY_DELETE_CHAR = 127
+MAX_JOB_ARGS = 8
+MAX_JOB_ARG_LEN = 159
 
 HEADER_ICONS = {
     "Control Center": "cog",
@@ -98,12 +102,13 @@ def draw_footer(width, height, text):
     gfx.text(7, y + 17, clip(text, max(4, (width - 14) // 6)))
 
 
-def draw_row(width, y, primary, secondary, selected, icon=""):
+def draw_row(width, y, primary, secondary, selected, icon="",
+             solid_separator=False):
     # Keep the row background solid white. LIGHT is dithered on the reflective
     # LCD and reduces text contrast instead of reading as a gentle highlight.
     gfx.color(gfx.WHITE)
     gfx.fill_rect(4, y + 1, width - 8, ROW_H - 2)
-    gfx.color(gfx.LIGHT)
+    gfx.color(gfx.BLACK if solid_separator else gfx.LIGHT)
     gfx.line(11, y + ROW_H - 1, width - 11, y + ROW_H - 1)
     if selected:
         gfx.color(gfx.BLACK)
@@ -119,6 +124,11 @@ def draw_row(width, y, primary, secondary, selected, icon=""):
     gfx.text(content_x, y + 34, clip(secondary, max(4, (width - content_x - 18) // 6)))
     if selected:
         safe_icon(width - 24, y + 13, "chevron-right", 16)
+
+
+def draw_menu_row(width, y, row, selected, solid_separator=False):
+    icon = row[2] if len(row) > 2 else ""
+    draw_row(width, y, row[0], row[1], selected, icon, solid_separator)
 
 
 def message(width, height, title, text, footer="Press any key"):
@@ -154,6 +164,69 @@ def message(width, height, title, text, footer="Press any key"):
 def confirm(width, height, title, text):
     return message(width, height, title, text,
                    "Y confirm   any other key cancels") in (ord("y"), ord("Y"))
+
+
+def edit_text(width, height, title, label, limit=MAX_JOB_ARG_LEN):
+    value = ""
+    while not solaros.should_exit():
+        gfx.clear(gfx.WHITE)
+        draw_header(width, title, label,
+                    "{}/{}".format(len(value), limit))
+        gfx.color(gfx.BLACK)
+        gfx.font(gfx.FONT_MONO_14)
+        columns = max(8, (width - 24) // 7)
+        shown = value + "_"
+        lines = []
+        while shown:
+            lines.append(shown[:columns])
+            shown = shown[columns:]
+        available = max(1, (height - HEADER_H - FOOTER_H - 20) // 19)
+        y = HEADER_H + 24
+        for line in lines[-available:]:
+            gfx.text(12, y, line)
+            y += 19
+        footer = ("Maximum length reached" if len(value) >= limit else
+                  "Enter accept   Esc cancel   Backspace delete")
+        draw_footer(width, height, footer)
+        gfx.refresh()
+        key = wait_key()
+        if key == gfx.KEY_ESCAPE:
+            return None
+        if key in (KEY_ENTER, KEY_LF):
+            return value.strip()
+        if key in (KEY_BACKSPACE, KEY_DELETE_CHAR,
+                   getattr(gfx, "KEY_DELETE", -1003)):
+            value = value[:-1]
+        elif isinstance(key, int) and 32 <= key <= 126 and len(value) < limit:
+            value += chr(key)
+    return None
+
+
+def collect_job_arguments(width, height, name):
+    arguments = []
+    while len(arguments) < MAX_JOB_ARGS and not solaros.should_exit():
+        number = len(arguments) + 1
+        label = "Argument {}/{}; blank finishes".format(number, MAX_JOB_ARGS)
+        value = edit_text(width, height, "Start " + name, label)
+        if value is None:
+            return None
+        if not value:
+            break
+        arguments.append(value)
+    return arguments
+
+
+def choose_job_arguments(width, height, name):
+    key = message(
+        width, height, "Start job",
+        "Start {} with its default settings? Choose No to enter arguments."
+        .format(name),
+        "Y defaults   N arguments   Esc cancel")
+    if key in (ord("y"), ord("Y")):
+        return []
+    if key in (ord("n"), ord("N")):
+        return collect_job_arguments(width, height, name)
+    return None
 
 
 def info_page(width, height, title, items, subtitle="System readings"):
@@ -251,6 +324,14 @@ def job_running(job):
     return job.get("state") in ("running", "starting")
 
 
+def group_jobs(jobs):
+    jobs.sort(key=lambda item: (not job_running(item),
+                                clean(item.get("name", "")).lower()))
+    running_count = len([item for item in jobs if job_running(item)])
+    divider_before = running_count if 0 < running_count < len(jobs) else None
+    return jobs, divider_before
+
+
 def summary_rows(data):
     battery = data["battery"]
     wifi = data["wifi"]
@@ -272,50 +353,85 @@ def summary_rows(data):
             ("Hardware", "Battery " + battery_text + "  Apps " + str(len(data["apps"])), "tablet")]
 
 
-def menu(width, height, title, rows, footer="Enter select   Esc back"):
+def first_prefix_match(rows, prefix):
+    prefix = prefix.lower()
+    for index, row in enumerate(rows):
+        if clean(row[0]).lower().startswith(prefix):
+            return index
+    return None
+
+
+def menu(width, height, title, rows, footer="Enter select   Esc back",
+         divider_before=None, typeahead=False):
     if not rows:
         message(width, height, title, "No items are available.")
         return None
     selected = 0
     previous = None
     previous_start = None
+    prefix = ""
+    previous_prefix = None
     while not solaros.should_exit():
         visible = max(1, (height - HEADER_H - FOOTER_H) // ROW_H)
         start = (selected // visible) * visible
-        if previous is None or previous_start != start:
+        if previous is None or previous_start != start or previous_prefix != prefix:
             gfx.clear(gfx.WHITE)
-            draw_header(width, title, "{} item{}".format(len(rows), "" if len(rows) == 1 else "s"),
+            subtitle = ("Find: " + prefix if prefix else
+                        "{} item{}".format(len(rows), "" if len(rows) == 1 else "s"))
+            draw_header(width, title, subtitle,
                         "{}/{}".format(selected + 1, len(rows)))
             draw_footer(width, height, footer)
             for index in range(start, min(len(rows), start + visible)):
-                icon = rows[index][2] if len(rows[index]) > 2 else ""
-                draw_row(width, HEADER_H + (index - start) * ROW_H,
-                         rows[index][0], rows[index][1], index == selected, icon)
+                draw_menu_row(width, HEADER_H + (index - start) * ROW_H,
+                              rows[index], index == selected,
+                              index + 1 == divider_before)
         else:
             if start <= previous < start + visible:
-                icon = rows[previous][2] if len(rows[previous]) > 2 else ""
-                draw_row(width, HEADER_H + (previous - start) * ROW_H,
-                         rows[previous][0], rows[previous][1], False, icon)
-            icon = rows[selected][2] if len(rows[selected]) > 2 else ""
-            draw_row(width, HEADER_H + (selected - start) * ROW_H,
-                     rows[selected][0], rows[selected][1], True, icon)
+                draw_menu_row(width, HEADER_H + (previous - start) * ROW_H,
+                              rows[previous], False,
+                              previous + 1 == divider_before)
+            draw_menu_row(width, HEADER_H + (selected - start) * ROW_H,
+                          rows[selected], True,
+                          selected + 1 == divider_before)
             draw_counter(width, "{}/{}".format(selected + 1, len(rows)))
         gfx.refresh()
         previous = selected
         previous_start = start
+        previous_prefix = prefix
         key = wait_key()
-        if key in (gfx.KEY_ESCAPE, gfx.KEY_LEFT, ord("q"), ord("Q")):
+        if key in (gfx.KEY_ESCAPE, gfx.KEY_LEFT) or (
+                not typeahead and key in (ord("q"), ord("Q"))):
             return None
-        if key in (gfx.KEY_UP, ord("k")):
+        if key == gfx.KEY_UP or (not typeahead and key == ord("k")):
             selected = (selected - 1) % len(rows)
-        elif key in (gfx.KEY_DOWN, ord("j")):
+            prefix = ""
+        elif key == gfx.KEY_DOWN or (not typeahead and key == ord("j")):
             selected = (selected + 1) % len(rows)
+            prefix = ""
         elif key == getattr(gfx, "KEY_PAGE_UP", -1001):
             selected = max(0, selected - visible)
+            prefix = ""
         elif key == getattr(gfx, "KEY_PAGE_DOWN", -1002):
             selected = min(len(rows) - 1, selected + visible)
+            prefix = ""
         elif key in (KEY_ENTER, KEY_LF, gfx.KEY_RIGHT):
             return selected
+        elif typeahead and key in (KEY_BACKSPACE, KEY_DELETE_CHAR):
+            prefix = prefix[:-1]
+            if prefix:
+                match = first_prefix_match(rows, prefix)
+                if match is not None:
+                    selected = match
+        elif typeahead and isinstance(key, int) and 32 <= key <= 126:
+            character = chr(key).lower()
+            candidate = prefix + character
+            match = first_prefix_match(rows, candidate)
+            if match is None and prefix:
+                candidate = character
+                match = first_prefix_match(rows, candidate)
+            if match is not None:
+                prefix = candidate
+                selected = match
     return None
 
 
@@ -338,34 +454,46 @@ def overview(width, height, data):
     info_page(width, height, "System overview", items)
 
 
+def change_job(width, height, job):
+    name = clean(job.get("name", ""))
+    running = job_running(job)
+    arguments = None
+    if running:
+        if not confirm(width, height, "Stop job", "Stop {}?".format(name)):
+            return
+    else:
+        arguments = choose_job_arguments(width, height, name)
+        if arguments is None:
+            return
+    try:
+        if running:
+            solaros.jobs.stop(name)
+        elif arguments:
+            solaros.jobs.start(name, arguments)
+        else:
+            solaros.jobs.start(name)
+        message(width, height, "Job updated",
+                name + " is now " + ("stopped." if running else "starting."))
+    except Exception as error:
+        message(width, height, "Job unchanged",
+                clean(str(error), "SolarOS refused the request.", 500))
+
+
 def jobs_screen(width, height):
     while not solaros.should_exit():
         jobs = api_call("jobs", "list", [])
         if not isinstance(jobs, list):
             jobs = []
         jobs = [item for item in jobs if isinstance(item, dict)]
-        jobs.sort(key=lambda item: clean(item.get("name", "")).lower())
+        jobs, divider_before = group_jobs(jobs)
         rows = [(clean(item.get("name", "Unnamed job")),
                  clean(item.get("state", "unknown")) + "  " + clean(item.get("summary", ""))) for item in jobs]
         choice = menu(width, height, "Background jobs", rows,
-                      "Enter start/stop   Esc back")
+                      "Type name  Enter start/stop  Esc back",
+                      divider_before=divider_before, typeahead=True)
         if choice is None:
             return
-        job = jobs[choice]
-        name = clean(job.get("name", ""))
-        running = job_running(job)
-        verb = "stop" if running else "start"
-        note = "Stop {}?".format(name) if running else "Start {} with its default settings? Some jobs require arguments and may refuse.".format(name)
-        heading = ("Stop" if running else "Start") + " job"
-        if confirm(width, height, heading, note):
-            try:
-                if running:
-                    solaros.jobs.stop(name)
-                else:
-                    solaros.jobs.start(name)
-                message(width, height, "Job updated", name + " is now " + ("stopped." if running else "starting."))
-            except Exception as error:
-                message(width, height, "Job unchanged", clean(str(error), "SolarOS refused the request.", 500))
+        change_job(width, height, jobs[choice])
         gc.collect()
 
 
