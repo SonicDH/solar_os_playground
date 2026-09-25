@@ -15,8 +15,9 @@ and cached article text for disconnected reading.
 - Open a post's web link directly in the registered Web app.
 - Route direct MP3 post links to WebRadio for streaming playback.
 - Basic HTML and Markdown conversion for terminal reading.
+- Optional article read-aloud through the running `speechd` service.
 - Image placeholders based on alt text or the source filename; images are not
-  downloaded.
+  downloaded or spoken during read-aloud.
 - Streamed, one-feed-at-a-time refreshes with bounded memory use.
 
 Feed subscriptions are stored in `feeds.json`, lightweight article metadata in
@@ -36,7 +37,9 @@ and files that age out of a feed's configured retention limit are removed.
 - Up/Down: move through posts.
 - Page Up/Page Down: move five posts at a time.
 - Enter or Right: open the selected article and mark it read.
-- In an article, `o` opens its link in Web.
+- In an article, `o` opens its link in Web and `r` reads it aloud when
+  `speechd` is running.
+- Escape, Left, or `q` stops article read-aloud before returning to the feed.
 - `r`: refresh all configured feeds.
 - `f`: open the feed manager or change between aggregate and feed views.
 - `m`: mark every cached post in the current individual feed as read.
@@ -52,3 +55,6 @@ not download linked web pages or images. HTTP(S) links open in Web.
 RSS Reader requires SolarOS 4.13.6 or newer, Wi-Fi, and the Python and
 Playground packages. It uses the streaming `solaros.http` and app handoff APIs
 and the terminal UI, so it does not require a graphical display.
+
+Read-aloud is optional. If the firmware flavor does not include speech support
+or `speechd` is not running, the `r` action silently does nothing.

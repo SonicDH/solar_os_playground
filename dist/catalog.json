@@ -570,7 +570,7 @@
       "version": "1.0.0"
     },
     {
-      "archive": "packages/rss/1.2.0/rss-1.2.0.sopkg",
+      "archive": "packages/rss/1.3.0/rss-1.3.0.sopkg",
       "author": "Victor Khaze",
       "category": "utilities",
       "description": "Offline-first RSS and Atom reader with aggregate, per-feed, and cached article views.",
@@ -582,8 +582,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "75b7ba2998ec56b81399c1a923d4f972bf3f0cc3cf37ebddb6730f735ff95dd4",
-      "size": 11037,
+      "sha256": "a219bbcc337cc0a59e02239ae637540dbfa203b025ffa6ee09e7f8cefe5b05bc",
+      "size": 12367,
       "tags": [
         "atom",
         "feeds",
@@ -591,7 +591,7 @@
         "offline",
         "rss"
       ],
-      "version": "1.2.0"
+      "version": "1.3.0"
     },
     {
       "archive": "packages/today/1.2.0/today-1.2.0.sopkg",

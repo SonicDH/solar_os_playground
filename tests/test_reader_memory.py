@@ -87,6 +87,95 @@ class RssMemoryTests(unittest.TestCase):
         self.assertEqual(1, len(posts))
         self.assertLessEqual(len(posts[0]["summary"]), 512)
 
+    def test_help_bar_spans_width_and_bolds_mnemonics(self):
+        calls = []
+        self.rss.tui.INVERSE = 1
+        self.rss.tui.BOLD = 2
+        self.rss.tui.addstr = lambda *args: calls.append(args)
+
+        self.rss.draw_help(7, 24, "Open link  Read aloud",
+                           (("Open link", 0), ("Read aloud", 0)))
+
+        self.assertEqual((7, 0, " " * 24, self.rss.tui.INVERSE), calls[0])
+        self.assertEqual("O", calls[2][2])
+        self.assertEqual(self.rss.tui.INVERSE | self.rss.tui.BOLD, calls[2][3])
+        self.assertEqual("R", calls[3][2])
+        self.assertEqual(self.rss.tui.INVERSE | self.rss.tui.BOLD, calls[3][3])
+
+    def test_read_aloud_is_silent_when_speechd_is_not_running(self):
+        class StoppedSpeech:
+            def __init__(self):
+                self.spoken = []
+
+            @staticmethod
+            def queue_status():
+                return {"running": False}
+
+            def say(self, text):
+                self.spoken.append(text)
+
+        speech = StoppedSpeech()
+        self.rss.solaros.speech = speech
+        self.rss.read_aloud({"title": "News"}, "Article body")
+        self.assertEqual([], speech.spoken)
+
+    def test_read_aloud_enqueues_bounded_chunks(self):
+        class RunningSpeech:
+            def __init__(self):
+                self.spoken = []
+                self.cancelled = []
+                self.queued = 0
+                self.capacity = 2
+
+            def queue_status(self):
+                return {"running": True, "queued": self.queued,
+                        "capacity": self.capacity, "current_id": 0}
+
+            def say(self, text):
+                self.assert_chunk(text)
+                self.spoken.append(text)
+                self.queued += 1
+                return len(self.spoken)
+
+            def cancel(self, request_id):
+                self.cancelled.append(request_id)
+
+            @staticmethod
+            def assert_chunk(text):
+                if len(text.encode("utf-8")) > 512:
+                    raise AssertionError("speech chunk exceeds API limit")
+
+        speech = RunningSpeech()
+        self.rss.solaros.speech = speech
+        state = self.rss.read_aloud(
+            {"title": "News"}, ("word " * 1600) + (" caf\u00e9" * 200))
+        active_state = state
+        submitted = len(speech.spoken)
+        self.rss.cancel_read_aloud(active_state)
+        self.assertEqual(list(range(1, submitted + 1)), speech.cancelled)
+
+        speech.cancelled = []
+        speech.queued = 0
+        state = self.rss.read_aloud(
+            {"title": "News"}, ("word " * 1600) + (" caf\u00e9" * 200))
+        while state is not None:
+            speech.queued = 0
+            state = self.rss.pump_read_aloud(state)
+        self.assertGreater(len(speech.spoken), 1)
+        self.assertTrue(speech.spoken[0].startswith("News."))
+        self.assertTrue(all(len(chunk.encode("utf-8")) <=
+                            self.rss.SPEECH_CHUNK_LIMIT
+                            for chunk in speech.spoken))
+
+    def test_speech_omits_image_placeholders(self):
+        chunks = self.rss.speech_chunks(
+            "News", "Before [Image: photo.jpg] after.\n[Image: ]\nEnding.")
+        spoken = " ".join(chunks)
+        self.assertNotIn("[Image:", spoken)
+        self.assertNotIn("photo.jpg", spoken)
+        self.assertIn("Before  after.", spoken)
+        self.assertIn("Ending.", spoken)
+
 
 class WikipediaMemoryTests(unittest.TestCase):
     @classmethod

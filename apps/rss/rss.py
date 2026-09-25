@@ -40,6 +40,7 @@ HTTP_LIMIT = 256 * 1024
 ARTICLE_LIMIT = 12 * 1024
 ENTRY_BUFFER_LIMIT = 48 * 1024
 RENDER_INPUT_LIMIT = ENTRY_BUFFER_LIMIT
+SPEECH_CHUNK_LIMIT = 512
 
 KEY_ENTER = 10
 KEY_RETURN = 13
@@ -80,7 +81,21 @@ def wrap(value, width):
     return result or [""]
 
 
-def show_message(title, body, footer="Press any key"):
+def draw_help(row, cols, text, mnemonics=()):
+    if cols < 1:
+        return
+    tui.addstr(row, 0, " " * cols, tui.INVERSE)
+    visible = clip(text, cols)
+    tui.addstr(row, 0, visible, tui.INVERSE)
+    for label, offset in mnemonics:
+        start = visible.find(label)
+        position = start + offset
+        if start >= 0 and 0 <= position < len(visible):
+            tui.addstr(row, position, visible[position],
+                       tui.INVERSE | tui.BOLD)
+
+
+def show_message(title, body, footer="Press any key", mnemonics=()):
     rows, cols = tui.size()
     tui.clear()
     tui.addstr(0, 0, clip(" " + title + " ", cols), tui.INVERSE)
@@ -90,7 +105,7 @@ def show_message(title, body, footer="Press any key"):
             break
         tui.addstr(row, 1, line)
         row += 1
-    tui.addstr(rows - 1, 0, clip(footer, cols), tui.INVERSE)
+    draw_help(rows - 1, cols, footer, mnemonics)
     tui.refresh()
 
 
@@ -116,8 +131,7 @@ def edit_text(title, label, initial="", max_length=512):
             for part in parts[-max(1, rows - 6):]:
                 tui.addstr(row, 1, part)
                 row += 1
-            tui.addstr(rows - 1, 0,
-                       clip("Enter accept  Esc cancel", cols), tui.INVERSE)
+            draw_help(rows - 1, cols, "Enter accept  Esc cancel")
             tui.refresh()
             dirty = False
         key = tui.getch(250)
@@ -767,6 +781,119 @@ def filtered_posts(posts, feed_url):
     return [post for post in posts if post.get("feed_url") == feed_url]
 
 
+def utf8_prefix_length(text, byte_limit):
+    low = 1
+    high = min(len(text), byte_limit)
+    result = 0
+    while low <= high:
+        middle = (low + high) // 2
+        if len(text[:middle].encode("utf-8")) <= byte_limit:
+            result = middle
+            low = middle + 1
+        else:
+            high = middle - 1
+    return result
+
+
+def without_image_labels(value):
+    value = str(value or "")
+    result = []
+    position = 0
+    while position < len(value):
+        start = value.find("[Image:", position)
+        if start < 0:
+            result.append(value[position:])
+            break
+        result.append(value[position:start])
+        end = value.find("]", start + 7)
+        if end < 0:
+            result.append(value[start:])
+            break
+        position = end + 1
+    return "".join(result)
+
+
+def speech_chunks(title, content):
+    title = clean_space(title)
+    content = without_image_labels(content).strip()
+    text = ((title + ".\n") if title else "") + content
+    text = text.strip()
+    chunks = []
+    while text:
+        prefix_length = utf8_prefix_length(text, SPEECH_CHUNK_LIMIT)
+        if prefix_length >= len(text):
+            chunks.append(text)
+            break
+        candidate = text[:prefix_length]
+        cut = max(candidate.rfind(". "), candidate.rfind("! "),
+                  candidate.rfind("? "), candidate.rfind("\n"),
+                  candidate.rfind(" "))
+        if cut < prefix_length // 2:
+            cut = prefix_length
+        elif candidate[cut:cut + 2] in (". ", "! ", "? "):
+            cut += 1
+        chunk = text[:cut].strip()
+        if chunk:
+            chunks.append(chunk)
+        text = text[cut:].strip()
+    return chunks
+
+
+def pump_read_aloud(state):
+    if state is None:
+        return None
+    speech = state["speech"]
+    try:
+        status = speech.queue_status()
+        if not isinstance(status, dict) or not status.get("running"):
+            return None
+    except (AttributeError, OSError):
+        return None
+
+    submitted = False
+    capacity = max(1, status.get("capacity", 1))
+    available = max(0, capacity - status.get("queued", 0))
+    while state["next"] < len(state["chunks"]) and available > 0:
+        try:
+            request_id = speech.say(state["chunks"][state["next"]])
+        except OSError:
+            # The queue can fill between queue_status() and say(). Retry on the
+            # next UI tick unless speechd reports that it has stopped.
+            return state
+        state["requests"].append(request_id)
+        state["next"] += 1
+        available -= 1
+        submitted = True
+
+    if (state["next"] >= len(state["chunks"]) and not submitted and
+            status.get("queued", 0) == 0 and status.get("current_id", 0) == 0):
+        return None
+    return state
+
+
+def read_aloud(post, content):
+    speech = getattr(solaros, "speech", None)
+    if speech is None:
+        return None
+    chunks = speech_chunks(post.get("title", ""), content)
+    if not chunks:
+        return None
+    return pump_read_aloud({"speech": speech, "chunks": chunks, "next": 0,
+                            "requests": []})
+
+
+def cancel_read_aloud(state):
+    if state is None:
+        return
+    speech = state["speech"]
+    for request_id in state["requests"]:
+        try:
+            speech.cancel(request_id)
+        except (AttributeError, OSError):
+            pass
+    state["requests"] = []
+
+
 def draw_posts(posts, selected, view_name, note="", individual=False):
     rows, cols = tui.size()
     tui.clear()
@@ -805,9 +932,10 @@ def draw_posts(posts, selected, view_name, note="", individual=False):
     footer = "Up/Down Enter read  f feeds  r refresh  q quit"
     if individual:
         footer = "Up/Down Enter read  m mark all read  f feeds  q quit"
-    tui.addstr(rows - 1, 0,
-               clip(footer, cols),
-               tui.INVERSE)
+    mnemonics = (("f feeds", 0), ("r refresh", 0), ("q quit", 0))
+    if individual:
+        mnemonics = (("m mark", 0), ("f feeds", 0), ("q quit", 0))
+    draw_help(rows - 1, cols, footer, mnemonics)
     tui.refresh()
 
 
@@ -816,8 +944,11 @@ def show_post(post):
     content = load_article(post)
     lines = wrap(content, cols - 2)
     offset = 0
+    speech_state = None
     dirty = True
     while not solaros.should_exit():
+        if speech_state is not None:
+            speech_state = pump_read_aloud(speech_state)
         if dirty:
             tui.clear()
             tui.addstr(0, 0, clip(" " + post.get("title", "Untitled") + " ", cols),
@@ -829,13 +960,15 @@ def show_post(post):
             position = "{}-{} / {}".format(offset + 1,
                 min(len(lines), offset + rows - 3), len(lines))
             tui.addstr(rows - 2, 1, clip(position + "  " + post.get("link", ""), cols - 2))
-            tui.addstr(rows - 1, 0,
-                       clip("Up/Down PgUp/PgDn scroll  o open link  Esc back", cols), tui.INVERSE)
+            draw_help(rows - 1, cols,
+                      "Up/Down PgUp/PgDn scroll  Open link  Read aloud  Esc stop/back",
+                      (("Open link", 0), ("Read aloud", 0)))
             tui.refresh()
             dirty = False
         key = tui.getch(250)
         maximum = max(0, len(lines) - (rows - 3))
         if key == tui.KEY_ESCAPE or key == tui.KEY_LEFT or key == ord("q"):
+            cancel_read_aloud(speech_state)
             return
         if key == ord("o"):
             url = clean_space(post.get("link", ""))
@@ -860,6 +993,10 @@ def show_post(post):
                 wait_key()
                 dirty = True
             continue
+        if key == ord("r"):
+            if speech_state is None:
+                speech_state = read_aloud(post, content)
+            continue
         if key == tui.KEY_DOWN and offset < maximum:
             offset += 1
             dirty = True
@@ -878,6 +1015,7 @@ def show_post(post):
         elif key == tui.KEY_END:
             offset = maximum
             dirty = True
+    cancel_read_aloud(speech_state)
 
 
 def draw_feeds(config, selected, note=""):
@@ -896,9 +1034,9 @@ def draw_feeds(config, selected, note=""):
         tui.addstr(row, 0, clip(prefix + (item.get("title") or item["url"]), cols), attr)
         row += 1
     tui.addstr(rows - 2, 1, "Cache limit: {} posts per feed".format(config["max_posts"]))
-    tui.addstr(rows - 1, 0,
-               clip("Enter view  a add  x remove  +/- limit  Esc back", cols),
-               tui.INVERSE)
+    draw_help(rows - 1, cols,
+              "Enter view  a add  x remove  +/- limit  Esc back",
+              (("a add", 0), ("x remove", 0)))
     tui.refresh()
 
 
@@ -941,7 +1079,7 @@ def manage_feeds(config):
         elif key == ord("x") and selected > 0:
             feed = config["feeds"][selected - 1]
             show_message("Remove feed?", feed.get("title") or feed["url"],
-                         "y remove  any other key cancels")
+                         "y remove  any other key cancels", (("y remove", 0),))
             if wait_key() == ord("y"):
                 config["feeds"].pop(selected - 1)
                 save_config(config)
