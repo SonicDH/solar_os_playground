@@ -1,6 +1,31 @@
 {
   "apps": [
     {
+      "archive": "packages/hex-o-spell/0.1.0/hex-o-spell-0.1.0.sopkg",
+      "author": "Marton Juhasz",
+      "category": "accessibility",
+      "description": "Accessible six-direction BLE keyboard for touchscreens and joysticks.",
+      "entry": "hex_o_spell.py",
+      "id": "hex-o-spell",
+      "min_solaros": "4.11.2",
+      "name": "Hex-O-Spell",
+      "requires": [
+        "ble",
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "f48fec2b65396a8620d32a640589157de6c77aa6c346c2ec98fe1fa57e3b3915",
+      "size": 12181,
+      "tags": [
+        "accessibility",
+        "ble",
+        "joystick",
+        "keyboard",
+        "touch"
+      ],
+      "version": "0.1.0"
+    },
+    {
       "archive": "packages/hello-lua/1.0.0/hello-lua-1.0.0.sopkg",
       "author": "SolarOS",
       "category": "examples",
@@ -11,8 +36,8 @@
       "name": "Hello Lua",
       "requires": [],
       "runtime": "lua",
-      "sha256": "67e895648527527d43ddea551f9c4d371bb01e24347e426055be5c3090746b59",
-      "size": 644,
+      "sha256": "903acb38d28b762eba1652c5a8e7cb1b908c6b89bfd542ca3125f77510223723",
+      "size": 639,
       "tags": [
         "hello",
         "starter"
@@ -30,8 +55,8 @@
       "name": "Hello Python",
       "requires": [],
       "runtime": "python",
-      "sha256": "f5c0987e22d8902d29d50bb07b16f7710f0f24e0a79a8059fa1426e9459f65bf",
-      "size": 650,
+      "sha256": "ca79f17ae358f4efc19e70225004aebd855ef253785046fb158f19206f756571",
+      "size": 645,
       "tags": [
         "hello",
         "starter"
@@ -51,8 +76,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "9ef3e9e531bef9513d162ddfbb7fba470afd6deeb59e8e6868353da73d593848",
-      "size": 1099,
+      "sha256": "747a195aa646786ea800c07cd4261d745aa2dac3d105e3db3afeecc3bbacc036",
+      "size": 1090,
       "tags": [
         "fractal",
         "graphics",
@@ -74,8 +99,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "09675c1f8a51081a7305cd83a83db27db51fb513d25fc3145c859cb0d6ed5afc",
-      "size": 1516,
+      "sha256": "43fc83c5448955b418641221ee3b748ceccd8f062add9ba52159cf3d60f9b6f0",
+      "size": 1499,
       "tags": [
         "fractal",
         "graphics",
@@ -98,8 +123,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "1622c244ccc62b07451ddff4a7be12b906a8245668bb73a691c06334542948cd",
-      "size": 2736,
+      "sha256": "1bc64c6596fbc68051c919300d881c75809b2835f98ef0478db1f2c8671ab0ac",
+      "size": 2711,
       "tags": [
         "arcade",
         "game",
@@ -122,8 +147,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "373520d50055228a33483751ddc7c6cc957ce788b2167512428800e8124f9111",
-      "size": 2669,
+      "sha256": "287fe7ea2cc5ad33c1929408e1734d0a219faaf53e8ae66bd9fc19917f0cf8d3",
+      "size": 2642,
       "tags": [
         "arcade",
         "game",
@@ -145,8 +170,8 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "66d99286cd63ba02f3176cf5cb251d5d5c26df2e4cfa7316aed57c6be767ab5d",
-      "size": 4164,
+      "sha256": "e6aa30fc02cb26da0467608ef42f40f8c17fb0212c71dfb75b6bb5c28acc8f01",
+      "size": 4126,
       "tags": [
         "boxes",
         "e-paper",
@@ -170,14 +195,39 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "2e35b49bc80b2ffd93a051c39422df9d571d9a6d6c758e920f097110538a6a86",
-      "size": 6431,
+      "sha256": "7f7b8d5b4abd638563bbc18e75219978b1441ad07337905fc73bce9fec721c55",
+      "size": 6365,
       "tags": [
         "audio",
         "chromatic",
         "music",
         "pitch",
         "tuner"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "archive": "packages/formulas/1.0.0/formulas-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "science",
+      "description": "Browse and calculate practical scientific formulas in coherent SI units.",
+      "entry": "formulas.py",
+      "id": "formulas",
+      "min_solaros": "4.4.0",
+      "name": "Formulas",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "0bc5f1b61587e82fda2b6b117010c0ba2236acbc6417bde5189112286aa93c7f",
+      "size": 15085,
+      "tags": [
+        "calculator",
+        "equations",
+        "formulas",
+        "reference",
+        "science",
+        "si"
       ],
       "version": "1.0.0"
     },
@@ -194,14 +244,39 @@
         "gfx"
       ],
       "runtime": "lua",
-      "sha256": "953fa092a236c79c22de281dd19e39e07741f7d0e15e56991961d971d8443a5c",
-      "size": 4899,
+      "sha256": "5986ae138473d45316f83a721943f4eb15cedc29b918c322aa8498e20e3f208f",
+      "size": 4869,
       "tags": [
         "angles",
         "geometry",
         "science",
         "triangle",
         "trigonometry"
+      ],
+      "version": "1.0.0"
+    },
+    {
+      "archive": "packages/unit-converter/1.0.0/unit-converter-1.0.0.sopkg",
+      "author": "SolarOS",
+      "category": "science",
+      "description": "Convert common SI measurements to Imperial units and back.",
+      "entry": "unit_converter.py",
+      "id": "unit-converter",
+      "min_solaros": "4.4.0",
+      "name": "Unit Converter",
+      "requires": [
+        "gfx"
+      ],
+      "runtime": "python",
+      "sha256": "f9d5bceded4b475e64500243b091550c57ec4f1430b04b1b63467641ec87c6d2",
+      "size": 5456,
+      "tags": [
+        "calculator",
+        "conversion",
+        "imperial",
+        "science",
+        "si",
+        "units"
       ],
       "version": "1.0.0"
     },
@@ -242,8 +317,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "9cad790dfedcf32b4c51ff4867895a5ea1ba6ed42240e25889c68d7c2f6d1a65",
-      "size": 37952,
+      "sha256": "2d7a64958d1e1f3ed36a8fe48c95abf74cf5babaa992c3266dc71094fdef0a5e",
+      "size": 37687,
       "tags": [
         "chat",
         "cyberspace",
@@ -303,7 +378,7 @@
       "version": "1.1.0"
     },
     {
-      "archive": "packages/control-center/1.1.3/control-center-1.1.3.sopkg",
+      "archive": "packages/control-center/1.1.4/control-center-1.1.4.sopkg",
       "author": "Victor Khaze",
       "category": "utilities",
       "description": "Graphical SolarOS status, job, Wi-Fi, storage, and hardware controls using native system APIs.",
@@ -315,8 +390,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "70f3acdb46dee8f86ddeef051ff2c36183312404fbe862b4380487f0706e6faf",
-      "size": 6712,
+      "sha256": "490b324a95e4a18892566e970284b2842fe39566caa704f6bc3d062042d39f09",
+      "size": 8007,
       "tags": [
         "device",
         "jobs",
@@ -325,7 +400,7 @@
         "status",
         "system"
       ],
-      "version": "1.1.3"
+      "version": "1.1.4"
     },
     {
       "archive": "packages/copyparty/1.8.0/copyparty-1.8.0.sopkg",
@@ -483,8 +558,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "4b53bbd186194a8c44aa4abcdec41c1785d69154221acbaf7508621ee4b1da05",
-      "size": 5718,
+      "sha256": "4af4872a2c68445a4dd23920b792059e66684ca91c86be8b98ef6a6039a896d0",
+      "size": 5663,
       "tags": [
         "e-paper",
         "qr",
@@ -507,8 +582,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "37fdf5786aa0d2339784fdadb6fc7c4db1045e227d830aabc4fc616ce2362b61",
-      "size": 10859,
+      "sha256": "75b7ba2998ec56b81399c1a923d4f972bf3f0cc3cf37ebddb6730f735ff95dd4",
+      "size": 11037,
       "tags": [
         "atom",
         "feeds",
@@ -581,8 +656,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "8ed50abefad6c44f53938ec52a021d28281bc1e4155ac348d4ff9d15280228a5",
-      "size": 7998,
+      "sha256": "2225fc16a7143d6a955c6c96addf148c795553fce47e7208aac1997274c22c51",
+      "size": 7938,
       "tags": [
         "forecast",
         "open-meteo",
@@ -592,7 +667,7 @@
       "version": "1.0.0"
     },
     {
-      "archive": "packages/wikipedia/1.0.2/wikipedia-1.0.2.sopkg",
+      "archive": "packages/wikipedia/1.0.3/wikipedia-1.0.3.sopkg",
       "author": "Victor Khaze",
       "category": "utilities",
       "description": "Fast text Wikipedia reader with search, link hopping, bookmarks, cache, and an offline library.",
@@ -604,8 +679,8 @@
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "c6ecb217318d360464d7a300d5d9f5a0f77856b9541c1f90a38582cecda20e40",
-      "size": 12369,
+      "sha256": "f22430dbdb250b7845da33d28b42f92950062301e7d8304f6efe3a817fe33c6c",
+      "size": 12636,
       "tags": [
         "encyclopedia",
         "offline",
@@ -613,7 +688,7 @@
         "reference",
         "wikipedia"
       ],
-      "version": "1.0.2"
+      "version": "1.0.3"
     }
   ],
   "categories": [
@@ -631,6 +706,11 @@
       "id": "social",
       "order": 18,
       "title": "Social"
+    },
+    {
+      "id": "accessibility",
+      "order": 19,
+      "title": "Accessibility"
     },
     {
       "id": "utilities",

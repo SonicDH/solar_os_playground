@@ -31,6 +31,8 @@ OFFLINE_PATH = APP_DIR + "/offline.json"
 HTML_LIMIT = 4 * 1024 * 1024
 SEARCH_LIMIT = 128 * 1024
 MAX_ARTICLES = 20
+EXTRACT_BUFFER_LIMIT = 16 * 1024
+EXTRACT_FLUSH_TARGET = 8 * 1024
 USER_AGENT = "SolarOS-Wikipedia-Reader/0.1"
 KEY_ENTER = 10
 KEY_RETURN = 13
@@ -176,23 +178,24 @@ def decode_entities(text):
     result = []
     position = 0
     while position < len(text):
-        if text[position] != "&":
-            result.append(text[position])
-            position += 1
-            continue
-        end = text.find(";", position + 1, position + 16)
+        start = text.find("&", position)
+        if start < 0:
+            result.append(text[position:])
+            break
+        if start > position:
+            result.append(text[position:start])
+        end = text.find(";", start + 1, start + 16)
         if end < 0:
-            result.append("&")
-            position += 1
-            continue
-        name = text[position + 1:end]
+            result.append(text[start:])
+            break
+        name = text[start + 1:end]
         value = None
         if name.startswith("#"):
             try:
                 value = chr(int(name[2:], 16) if name.startswith("#x") else int(name[1:]))
             except Exception:
                 value = None
-        result.append(value if value is not None else text[position:end + 1])
+        result.append(value if value is not None else text[start:end + 1])
         position = end + 1
     return "".join(result)
 
@@ -234,9 +237,12 @@ def request_json(url):
     body = response.get("body", b"")
     if response.get("truncated"):
         raise RuntimeError("response too large")
-    value = json.loads(body.decode("utf-8"))
+    text = body.decode("utf-8")
     body = None
     response = None
+    gc.collect()
+    value = json.loads(text)
+    text = None
     gc.collect()
     return value
 
@@ -248,7 +254,12 @@ def request_text(url):
         raise RuntimeError("HTTP {}".format(status))
     if response.get("truncated"):
         raise RuntimeError("response too large")
-    return response.get("body", b"").decode("utf-8")
+    body = response.get("body", b"")
+    text = body.decode("utf-8")
+    body = None
+    response = None
+    gc.collect()
+    return text
 
 
 def json_string_field(text, name):
@@ -331,6 +342,9 @@ def stream_article(url, path):
                     if received >= next_update:
                         draw_progress(received, total)
                         next_update = received + max(8192, total // 20 if total > 0 else 0)
+                        event = None
+                        chunk = None
+                        gc.collect()
                 elif kind == "error":
                     raise RuntimeError(event.get("error_name", "HTTP error"))
                 elif kind == "complete":
@@ -378,16 +392,31 @@ def attribute(tag, name):
     return tag[position:end]
 
 
-def write_wrapped(output, text, width):
+def write_wrapped(output, text, width, final_break=True):
     text = decode_entities(text)
-    for paragraph in text.replace("\r", "").split("\n"):
+    paragraphs = text.replace("\r", "").split("\n")
+    for index, paragraph in enumerate(paragraphs):
         paragraph = clean_space(paragraph)
         if paragraph.startswith("==") and paragraph.endswith("=="):
             paragraph = "## " + paragraph.strip("= ")
         if paragraph:
             for line in wrap(paragraph, width):
                 output.write(line + "\n")
-        output.write("\n")
+        if final_break or index + 1 < len(paragraphs):
+            output.write("\n")
+
+
+def extract_flush_cut(text):
+    limit = min(EXTRACT_FLUSH_TARGET, len(text))
+    cut = max(text.rfind("\n", 0, limit + 1),
+              text.rfind(" ", 0, limit + 1),
+              text.rfind("\t", 0, limit + 1))
+    cut = cut + 1 if cut >= 0 else limit
+    ampersand = text.rfind("&", 0, cut)
+    semicolon = text.rfind(";", 0, cut)
+    if ampersand > semicolon and ampersand > 0:
+        cut = ampersand
+    return max(1, cut)
 
 
 def parse_extract_xml(source_path, body_path, width):
@@ -418,6 +447,11 @@ def parse_extract_xml(source_path, body_path, width):
             if safe >= 0:
                 write_wrapped(output, pending[:safe + 1], width)
                 pending = pending[safe + 1:]
+            elif len(pending) > EXTRACT_BUFFER_LIMIT:
+                safe = extract_flush_cut(pending)
+                write_wrapped(output, pending[:safe], width, False)
+                pending = pending[safe:]
+                gc.collect()
         if started and pending:
             write_wrapped(output, pending, width)
 
@@ -543,9 +577,9 @@ def prepare_article(settings, key, title, language=None):
     url = (api_base(article_settings) + "/w/api.php?action=query&prop=extracts%7Clinks"
            "&explaintext=1&exsectionformat=plain&plnamespace=0&pllimit=200"
            "&redirects=1&titles=" + key + "&format=xml")
-    stream_article(url, source_path)
-    message("Processing article", "Preparing plain text and article links", "Please wait")
     try:
+        stream_article(url, source_path)
+        message("Processing article", "Preparing plain text and article links", "Please wait")
         parse_extract_xml(source_path, body_path, max(20, tui.size()[1] - 2))
         parse_links_xml(source_path, links_path)
     finally:

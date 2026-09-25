@@ -1,0 +1,13 @@
+{
+  "id": "hex-o-spell",
+  "name": "Hex-O-Spell",
+  "version": "0.1.0",
+  "runtime": "python",
+  "entry": "hex_o_spell.py",
+  "category": "accessibility",
+  "description": "Accessible six-direction BLE keyboard for touchscreens and joysticks.",
+  "author": "Marton Juhasz",
+  "min_solaros": "4.11.2",
+  "tags": ["accessibility", "ble", "keyboard", "touch", "joystick"],
+  "requires": ["ble", "gfx"]
+}

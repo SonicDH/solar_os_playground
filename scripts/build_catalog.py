@@ -135,6 +135,18 @@ def application_files(directory: Path) -> list[Path]:
     )
 
 
+def package_file_bytes(path: Path) -> bytes:
+    """Return platform-independent bytes for a package source file."""
+    contents = path.read_bytes()
+    try:
+        text = contents.decode("utf-8")
+    except UnicodeDecodeError:
+        return contents
+    if "\0" in text:
+        return contents
+    return text.replace("\r\n", "\n").encode("utf-8")
+
+
 def validate_manifest(directory: Path, category_ids: set[str]) -> dict[str, object]:
     manifest_path = directory / "manifest.json"
     if not manifest_path.is_file():
@@ -226,7 +238,7 @@ def write_package(directory: Path, manifest: dict[str, object], output: Path) ->
             info.create_system = ZIP_CREATE_SYSTEM
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o644 << 16
-            archive.writestr(info, source.read_bytes())
+            archive.writestr(info, package_file_bytes(source))
 
 
 def build(output_root: Path) -> dict[str, object]:

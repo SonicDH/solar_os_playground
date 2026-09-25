@@ -44,8 +44,9 @@ including `display`, `gfx`, `cdc`, `uart`, `sd`, `i2c`, `spi`, `rtc`,
 `expansion_uart`, `expansion_adc`, `expansion_pwm`, and `simd`.
 
 The generator enforces the firmware's catalog sizes and text limits, creates a
-deterministic `.sopkg` ZIP, and writes its exact size and SHA-256 into
-`dist/catalog.json`.
+deterministic `.sopkg` ZIP, canonicalizes packaged UTF-8 text files to LF while
+preserving other assets byte for byte, and writes its exact size and SHA-256
+into `dist/catalog.json`.
 
 ## Script command-line convention
 

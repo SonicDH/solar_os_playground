@@ -39,6 +39,7 @@ DEFAULT_LIMIT = 10
 HTTP_LIMIT = 256 * 1024
 ARTICLE_LIMIT = 12 * 1024
 ENTRY_BUFFER_LIMIT = 48 * 1024
+RENDER_INPUT_LIMIT = ENTRY_BUFFER_LIMIT
 
 KEY_ENTER = 10
 KEY_RETURN = 13
@@ -262,6 +263,8 @@ def load_article(post):
 
 
 def decode_entities(text):
+    if "&" not in text:
+        return text
     named = {"amp": "&", "lt": "<", "gt": ">", "quot": '"',
              "apos": "'", "nbsp": " ", "lsquo": "'", "rsquo": "'",
              "ldquo": '"', "rdquo": '"', "ndash": "-", "mdash": "--",
@@ -271,16 +274,17 @@ def decode_entities(text):
     result = []
     position = 0
     while position < len(text):
-        if text[position] != "&":
-            result.append(text[position])
-            position += 1
-            continue
-        end = text.find(";", position + 1, position + 14)
+        start = text.find("&", position)
+        if start < 0:
+            result.append(text[position:])
+            break
+        if start > position:
+            result.append(text[position:start])
+        end = text.find(";", start + 1, start + 14)
         if end < 0:
-            result.append("&")
-            position += 1
-            continue
-        name = text[position + 1:end]
+            result.append(text[start:])
+            break
+        name = text[start + 1:end]
         value = named.get(name)
         if value is None and name.startswith("#"):
             try:
@@ -291,11 +295,20 @@ def decode_entities(text):
             except Exception:
                 value = None
         if value is None:
-            result.append(text[position:end + 1])
+            result.append(text[start:end + 1])
         else:
             result.append(value)
         position = end + 1
     return "".join(result)
+
+
+def append_limited(parts, value, used, limit):
+    if not value or (limit is not None and used >= limit):
+        return used
+    if limit is not None and used + len(value) > limit:
+        value = value[:limit - used]
+    parts.append(value)
+    return used + len(value)
 
 
 def attribute(tag, name):
@@ -344,21 +357,24 @@ def image_label(tag):
     return ""
 
 
-def html_to_text(html):
+def html_to_text(html, limit=None):
     html = html.replace("<![CDATA[", "").replace("]]>", "")
     result = []
     position = 0
     hidden = None
-    while position < len(html):
-        if html[position] != "<":
+    used = 0
+    while position < len(html) and (limit is None or used < limit):
+        start = html.find("<", position)
+        if start < 0:
             if hidden is None:
-                result.append(html[position])
-            position += 1
-            continue
-        end = html.find(">", position + 1)
+                used = append_limited(result, html[position:], used, limit)
+            break
+        if hidden is None and start > position:
+            used = append_limited(result, html[position:start], used, limit)
+        end = html.find(">", start + 1)
         if end < 0:
             break
-        tag = html[position:end + 1]
+        tag = html[start:end + 1]
         lower = tag.lower()
         if lower.startswith("<script"):
             hidden = "script"
@@ -368,14 +384,14 @@ def html_to_text(html):
             hidden = None
         elif hidden is None:
             if lower.startswith("<img"):
-                result.append(image_label(tag))
+                used = append_limited(result, image_label(tag), used, limit)
             elif lower.startswith("<li"):
-                result.append("\n* ")
+                used = append_limited(result, "\n* ", used, limit)
             elif (lower.startswith("<br") or lower.startswith("</p") or
                   lower.startswith("</div") or lower.startswith("</h") or
                   lower.startswith("</ul") or lower.startswith("</ol") or
                   lower.startswith("<hr")):
-                result.append("\n")
+                used = append_limited(result, "\n", used, limit)
         position = end + 1
     lines = []
     for line in decode_entities("".join(result)).replace("\xa0", " ").split("\n"):
@@ -423,9 +439,12 @@ def markdown_to_text(text):
     return "\n".join(lines).strip()
 
 
-def rendered_text(value):
+def rendered_text(value, limit=None):
     value = value or ""
-    rendered = (html_to_text(value) if "<" in value and ">" in value
+    if limit is not None:
+        value = value[:min(len(value), max(limit * 4, limit + 1024),
+                           RENDER_INPUT_LIMIT)]
+    rendered = (html_to_text(value, limit) if "<" in value and ">" in value
                 else markdown_to_text(value))
     # A second bounded pass handles common double-escaped feed content such as
     # &amp;#8217; without repeatedly expanding malformed or adversarial input.
@@ -514,14 +533,17 @@ def parse_feed(xml, feed_url, fallback_title):
 
 
 def parse_entry(block, kind, feed_url, feed_title):
-    title = rendered_text(tag_value(block, ("title",)))
+    title = rendered_text(tag_value(block, ("title",)), 512)
     link = tag_value(block, ("link", "guid"))
     if kind == "entry":
         link = atom_link(block) or link
     body_raw = tag_value(block, ("content:encoded", "content", "description", "summary"))
     summary_raw = tag_value(block, ("description", "summary"))
-    body = rendered_text(body_raw)[:ARTICLE_LIMIT]
-    summary = rendered_text(summary_raw)[:512]
+    body = rendered_text(body_raw, ARTICLE_LIMIT)[:ARTICLE_LIMIT]
+    if summary_raw == body_raw:
+        summary = body[:512]
+    else:
+        summary = rendered_text(summary_raw, 512)[:512]
     date = clean_space(decode_entities(tag_value(
         block, ("pubDate", "published", "updated", "dc:date"))))
     identity = tag_value(block, ("guid", "id")) or link or title
@@ -550,10 +572,12 @@ def decode_chunk(pending, chunk):
 
 def fetch_feed_stream(feed, limit):
     headers = {"Accept": "application/rss+xml, application/atom+xml, text/xml"}
-    handle = solaros.http.stream_open("GET", feed["url"], None, headers, 20000, False)
+    handle = None
     received = 0
     status = 0
     try:
+        handle = solaros.http.stream_open(
+            "GET", feed["url"], None, headers, 20000, False)
         with open(FEED_TEMP, "wb") as output:
             while not solaros.should_exit():
                 event = solaros.http.stream_read(handle, 1000)
@@ -570,18 +594,17 @@ def fetch_feed_stream(feed, limit):
                     if received > HTTP_LIMIT:
                         raise RuntimeError("feed exceeds 256 KB")
                     output.write(chunk)
+                    chunk = None
                 elif event_type == "error":
                     raise RuntimeError(event.get("error_name", "HTTP stream error"))
                 elif event_type == "complete":
                     break
             output.flush()
-    finally:
-        solaros.http.stream_close(handle)
-        handle = None
-        gc.collect()
-    try:
         return parse_feed_file(FEED_TEMP, feed, limit)
     finally:
+        if handle is not None:
+            solaros.http.stream_close(handle)
+        handle = None
         try:
             solaros.storage.remove(FEED_TEMP)
         except OSError:
@@ -591,7 +614,6 @@ def fetch_feed_stream(feed, limit):
 
 def parse_feed_file(path, feed, limit):
     buffer = bytearray()
-    lowered = bytearray()
     kind = None
     feed_title = feed.get("title", "") or feed["url"]
     posts = []
@@ -601,15 +623,13 @@ def parse_feed_file(path, feed, limit):
             if not chunk:
                 break
             buffer.extend(chunk)
-            lowered.extend(chunk.lower())
             if kind is None:
-                item_at = lowered.find(b"<item")
-                entry_at = lowered.find(b"<entry")
+                item_at = buffer.find(b"<item")
+                entry_at = buffer.find(b"<entry")
                 candidates = [value for value in (item_at, entry_at) if value >= 0]
                 if not candidates:
                     if len(buffer) > 16384:
                         buffer = buffer[-16384:]
-                        lowered = lowered[-16384:]
                     continue
                 first = min(candidates)
                 kind = "item" if first == item_at else "entry"
@@ -617,22 +637,19 @@ def parse_feed_file(path, feed, limit):
                 feed_title = (rendered_text(tag_value(header, ("title",))) or
                               feed_title)
                 buffer = buffer[first:]
-                lowered = lowered[first:]
             opening = ("<" + kind).encode("ascii")
             closing = ("</" + kind + ">").encode("ascii")
             while len(posts) < limit:
-                start = lowered.find(opening)
+                start = buffer.find(opening)
                 if start < 0:
                     if len(buffer) > 32:
                         buffer = buffer[-32:]
-                        lowered = lowered[-32:]
                     break
-                open_end = lowered.find(b">", start)
-                end = lowered.find(closing, open_end + 1)
+                open_end = buffer.find(b">", start)
+                end = buffer.find(closing, open_end + 1)
                 if open_end < 0 or end < 0:
                     if start > 0:
                         buffer = buffer[start:]
-                        lowered = lowered[start:]
                     if len(buffer) > ENTRY_BUFFER_LIMIT:
                         raise RuntimeError("feed entry is too large")
                     break
@@ -645,10 +662,9 @@ def parse_feed_file(path, feed, limit):
                 posts.append(post)
                 consumed = end + len(closing)
                 buffer = buffer[consumed:]
-                lowered = lowered[consumed:]
                 block = None
-                if len(posts) % 4 == 0:
-                    gc.collect()
+                post = None
+                gc.collect()
     if not posts:
         raise RuntimeError("feed contains no readable posts")
     return feed_title, posts

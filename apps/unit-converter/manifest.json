@@ -1,0 +1,13 @@
+{
+  "id": "unit-converter",
+  "name": "Unit Converter",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "unit_converter.py",
+  "category": "science",
+  "description": "Convert common SI measurements to Imperial units and back.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["calculator", "conversion", "imperial", "science", "si", "units"],
+  "requires": ["gfx"]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "formulas",
+  "name": "Formulas",
+  "version": "1.0.0",
+  "runtime": "python",
+  "entry": "formulas.py",
+  "category": "science",
+  "description": "Browse and calculate practical scientific formulas in coherent SI units.",
+  "author": "SolarOS",
+  "min_solaros": "4.4.0",
+  "tags": ["calculator", "equations", "formulas", "reference", "science", "si"],
+  "requires": ["gfx"]
+}

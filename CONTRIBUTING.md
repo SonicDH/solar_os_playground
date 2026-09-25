@@ -13,6 +13,9 @@ git diff --check
 ```
 
 Commit the application source and the regenerated `dist/` files together.
+The catalog builder canonicalizes UTF-8 text files to LF when packaging so
+generated archives remain identical across Windows, macOS, and Linux; other
+assets are preserved byte for byte.
 Reviewers should inspect scripts as executable code: SolarOS verifies package
 integrity during download, but Playground applications are not sandboxed.
 
