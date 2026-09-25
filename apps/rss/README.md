@@ -12,6 +12,8 @@ and cached article text for disconnected reading.
 - Configurable retention of 1 to 50 posts per feed.
 - Read/unread tracking and a per-feed "mark all read" action.
 - Offline article cache with a separate body file for each post.
+- Open a post's web link directly in the registered Web app.
+- Route direct MP3 post links to WebRadio for streaming playback.
 - Basic HTML and Markdown conversion for terminal reading.
 - Image placeholders based on alt text or the source filename; images are not
   downloaded.
@@ -34,6 +36,7 @@ and files that age out of a feed's configured retention limit are removed.
 - Up/Down: move through posts.
 - Page Up/Page Down: move five posts at a time.
 - Enter or Right: open the selected article and mark it read.
+- In an article, `o` opens its link in Web.
 - `r`: refresh all configured feeds.
 - `f`: open the feed manager or change between aggregate and feed views.
 - `m`: mark every cached post in the current individual feed as read.
@@ -42,11 +45,10 @@ and files that age out of a feed's configured retention limit are removed.
 - Escape, Left, or `q`: go back or quit.
 
 Removing a subscription leaves its already cached posts intact. The app does
-not download linked web pages or images and cannot hand a link directly to the
-graphical Web application.
+not download linked web pages or images. HTTP(S) links open in Web.
 
 ## Requirements
 
-RSS Reader requires SolarOS 4.8.4 or newer, Wi-Fi, and the Python and
-Playground packages. It uses the streaming `solaros.http` API and the terminal
-UI, so it does not require a graphical display.
+RSS Reader requires SolarOS 4.13.6 or newer, Wi-Fi, and the Python and
+Playground packages. It uses the streaming `solaros.http` and app handoff APIs
+and the terminal UI, so it does not require a graphical display.

@@ -61,8 +61,9 @@ foreground application ends the remainder of the script.
 - **Recent notes** and **Favorites** provide quick access.
 - **Search** checks indexed metadata and then scans one note body at a time.
 - **Tags** groups indexed notes by hashtag.
-- **Refresh index** reparses known notes and removes entries whose files are no
-  longer readable.
+- **Refresh index** scans the vault recursively, adds supported files that were
+  copied in outside Flint, refreshes note metadata, and removes entries for
+  deleted files.
 
 ## Reader controls
 
@@ -130,11 +131,10 @@ content, and graph visualization are not supported.
 - Up to 16 indexed tags and 32 outgoing wiki-link targets per note
 
 Only the current note is loaded for reading or editing, and full-text search
-opens one note at a time. SolarOS Python currently has no directory-list API,
-so Flint's browser is populated from its saved index. Notes created by Flint
-are indexed automatically. Use `flint --add-file /path/to/note.md` after
-transferring a note through Files, FTP, or another app. These limits keep
-memory use predictable on ESP32 devices.
+opens one note at a time. The browser is populated from Flint's saved index;
+use **Refresh index** after transferring files through Files, FTP, or another
+app. Refresh discovers supported files recursively, up to the 512-note index
+limit. These limits keep memory use predictable on ESP32 devices.
 
 ## Privacy
 

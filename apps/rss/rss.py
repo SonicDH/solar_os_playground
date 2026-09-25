@@ -830,13 +830,36 @@ def show_post(post):
                 min(len(lines), offset + rows - 3), len(lines))
             tui.addstr(rows - 2, 1, clip(position + "  " + post.get("link", ""), cols - 2))
             tui.addstr(rows - 1, 0,
-                       clip("Up/Down PgUp/PgDn scroll  Esc back", cols), tui.INVERSE)
+                       clip("Up/Down PgUp/PgDn scroll  o open link  Esc back", cols), tui.INVERSE)
             tui.refresh()
             dirty = False
         key = tui.getch(250)
         maximum = max(0, len(lines) - (rows - 3))
         if key == tui.KEY_ESCAPE or key == tui.KEY_LEFT or key == ord("q"):
             return
+        if key == ord("o"):
+            url = clean_space(post.get("link", ""))
+            if not (url.startswith("http://") or url.startswith("https://")):
+                show_message("Cannot open link", "This post has no HTTP or HTTPS link.",
+                             "Press any key")
+                wait_key()
+                dirty = True
+            elif url.split("#", 1)[0].split("?", 1)[0].lower().endswith(".mp3"):
+                if solaros.apps.find("webradio") is None:
+                    show_message("WebRadio unavailable", "No WebRadio app is installed to play this MP3 stream.",
+                                 "Press any key")
+                    wait_key()
+                    dirty = True
+                else:
+                    solaros.apps.launch("webradio", [url])
+            elif solaros.apps.can_open(url):
+                solaros.apps.open(url)
+            else:
+                show_message("Web unavailable", "No installed app can open this link.",
+                             "Press any key")
+                wait_key()
+                dirty = True
+            continue
         if key == tui.KEY_DOWN and offset < maximum:
             offset += 1
             dirty = True

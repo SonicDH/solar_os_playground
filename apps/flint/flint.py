@@ -502,24 +502,69 @@ def progress(width, height, title, current, total, detail=""):
 def rebuild_index(width, height, root, old_index):
     global REFRESH_ERRORS
     REFRESH_ERRORS = []
+    root = normalize_path(root)
+    discovered = []
+    folders = []
+    pending = [root]
+    seen_directories = {}
+    seen_paths = {}
+    scan_errors = 0
+    while pending and len(discovered) < MAX_NOTES:
+        folder = pending.pop()
+        key = folder.lower()
+        if key in seen_directories:
+            continue
+        seen_directories[key] = True
+        try:
+            cursor = None
+            while True:
+                page = solaros.storage.scandir(folder, cursor, 64)
+                entries = page.get("entries", [])
+                for entry in entries:
+                    name = entry.get("name", "")
+                    if not name or name in (".", ".."):
+                        continue
+                    path = normalize_path(folder.rstrip("/") + "/" + name)
+                    if not inside(root, path):
+                        continue
+                    if entry.get("is_dir"):
+                        folders.append(path)
+                        pending.append(path)
+                    elif entry.get("is_file") and is_note_path(path):
+                        lowered = path.lower()
+                        if lowered not in seen_paths:
+                            seen_paths[lowered] = True
+                            discovered.append(path)
+                            if len(discovered) >= MAX_NOTES:
+                                break
+                if len(discovered) >= MAX_NOTES:
+                    break
+                cursor = page.get("next_cursor")
+                if cursor is None:
+                    break
+        except Exception as error:
+            scan_errors += 1
+            if len(REFRESH_ERRORS) < 3:
+                REFRESH_ERRORS.append(basename(folder) + ": " +
+                                      clean_line(str(error) or repr(error), 60))
     result = {"version": 1, "notes": [],
               "favorites": list(old_index.get("favorites", [])),
               "recent": list(old_index.get("recent", [])),
-              "folders": list(old_index.get("folders", [])), "root": normalize_path(root)}
-    paths = [item.get("path", "") for item in old_index.get("notes", [])
-             if is_note_path(item.get("path", "")) and inside(root, item.get("path", ""))]
-    failures = 0
-    paths.sort(key=lambda value: value.lower())
-    for position, path in enumerate(paths):
+              "folders": folders, "root": root}
+    discovered.sort(key=lambda value: value.lower())
+    old_notes = {item.get("path", "").lower(): item
+                 for item in old_index.get("notes", [])}
+    failures = scan_errors
+    for position, path in enumerate(discovered):
         gc.collect()
         try:
             index_path(result, path)
         except Exception as error:
             failures += 1
             if len(REFRESH_ERRORS) < 3:
-                detail = clean_line(str(error) or repr(error), 60)
-                REFRESH_ERRORS.append(basename(path) + ": " + detail)
-            old = note_item(old_index, path)
+                REFRESH_ERRORS.append(basename(path) + ": " +
+                                      clean_line(str(error) or repr(error), 60))
+            old = old_notes.get(path.lower())
             has_copy = any(file_size(candidate) >= 0 for candidate in
                            (path, path + ".tmp", path + ".bak"))
             if old is not None and has_copy:
@@ -527,8 +572,9 @@ def rebuild_index(width, height, root, old_index):
                     upsert(result, old)
                 except ValueError:
                     pass
-        if position % 4 == 0 or position + 1 == len(paths):
-            progress(width, height, "Indexing notes", position + 1, len(paths), basename(path))
+        if position % 4 == 0 or position + 1 == len(discovered):
+            progress(width, height, "Scanning vault", position + 1,
+                     len(discovered), basename(path))
         if position % 8 == 7:
             gc.collect()
     valid = {item.get("path", "").lower(): True for item in result["notes"]}
@@ -537,7 +583,7 @@ def rebuild_index(width, height, root, old_index):
     save_index(result)
     old_index.clear()
     old_index.update(result)
-    return old_index, failures, len(paths) >= MAX_NOTES
+    return old_index, failures, len(discovered) >= MAX_NOTES
 
 
 def refresh_failure_text(failures):

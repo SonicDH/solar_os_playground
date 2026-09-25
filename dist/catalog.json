@@ -439,8 +439,8 @@
         "gfx"
       ],
       "runtime": "python",
-      "sha256": "0a3e8bbc83de53370f049ff2aeea32050f4e2dbe945468764a61571243d399ec",
-      "size": 24316,
+      "sha256": "caff73dadd66ee1377e58d4864fbbf87fb2a8d0606c069d5ccb70f9b2d25b464",
+      "size": 24627,
       "tags": [
         "daily-notes",
         "knowledge-base",
@@ -461,8 +461,8 @@
       "name": "Flint TUI",
       "requires": [],
       "runtime": "python",
-      "sha256": "4f24a20938c4766e4530747dcdbbfa4b2ab0a0a7c2a643d4926442b89ed9ae12",
-      "size": 23386,
+      "sha256": "92fe648c6347bc7f59faf8e246bfb8d9e2c06e2d508c08ca95beb6ef04929678",
+      "size": 23779,
       "tags": [
         "daily-notes",
         "knowledge-base",
@@ -522,20 +522,20 @@
       "version": "1.0.0"
     },
     {
-      "archive": "packages/opds/1.0.1/opds-1.0.1.sopkg",
+      "archive": "packages/opds/1.0.2/opds-1.0.2.sopkg",
       "author": "Victor Khaze",
       "category": "utilities",
       "description": "Browse and search OPDS book catalogs, keep a reading list, and download Reader-compatible books.",
       "entry": "opds.py",
       "id": "opds",
-      "min_solaros": "4.8.4",
+      "min_solaros": "4.13.6",
       "name": "OPDS Browser",
       "requires": [
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "f05d6465ec6b05b7f67d9eaed92684dc9bc40c18c698e27d76030c121da65ecd",
-      "size": 11368,
+      "sha256": "211c2f1fbc9ca383ef17c7e1e407414db0fbf97926d34fce7128ea831472546d",
+      "size": 11449,
       "tags": [
         "books",
         "ebooks",
@@ -543,7 +543,7 @@
         "library",
         "opds"
       ],
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "archive": "packages/qr-share/1.0.0/qr-share-1.0.0.sopkg",
@@ -570,20 +570,20 @@
       "version": "1.0.0"
     },
     {
-      "archive": "packages/rss/1.1.2/rss-1.1.2.sopkg",
+      "archive": "packages/rss/1.2.0/rss-1.2.0.sopkg",
       "author": "Victor Khaze",
       "category": "utilities",
       "description": "Offline-first RSS and Atom reader with aggregate, per-feed, and cached article views.",
       "entry": "rss.py",
       "id": "rss",
-      "min_solaros": "4.8.4",
+      "min_solaros": "4.13.6",
       "name": "RSS Reader",
       "requires": [
         "wifi"
       ],
       "runtime": "python",
-      "sha256": "2807361098194ed4102f85592afed53b279c6719d4ac0042c208977652bc5400",
-      "size": 10717,
+      "sha256": "75b7ba2998ec56b81399c1a923d4f972bf3f0cc3cf37ebddb6730f735ff95dd4",
+      "size": 11037,
       "tags": [
         "atom",
         "feeds",
@@ -591,7 +591,7 @@
         "offline",
         "rss"
       ],
-      "version": "1.1.2"
+      "version": "1.2.0"
     },
     {
       "archive": "packages/today/1.2.0/today-1.2.0.sopkg",

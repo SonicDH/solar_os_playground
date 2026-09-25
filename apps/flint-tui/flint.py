@@ -484,13 +484,56 @@ def progress(width, height, title, current, total, detail=""):
 def rebuild_index(width, height, root, old_index):
     global REFRESH_ERRORS
     REFRESH_ERRORS = []
+    root = normalize_path(root)
+    paths = []
+    folders = []
+    pending = [root]
+    seen_directories = {}
+    seen_paths = {}
+    failures = 0
+    while pending and len(paths) < MAX_NOTES:
+        folder = pending.pop()
+        key = folder.lower()
+        if key in seen_directories:
+            continue
+        seen_directories[key] = True
+        try:
+            cursor = None
+            while True:
+                page = solaros.storage.scandir(folder, cursor, 64)
+                for entry in page.get("entries", []):
+                    name = entry.get("name", "")
+                    if not name or name in (".", ".."):
+                        continue
+                    path = normalize_path(folder.rstrip("/") + "/" + name)
+                    if not inside(root, path):
+                        continue
+                    if entry.get("is_dir"):
+                        folders.append(path)
+                        pending.append(path)
+                    elif entry.get("is_file") and is_note_path(path):
+                        lowered = path.lower()
+                        if lowered not in seen_paths:
+                            seen_paths[lowered] = True
+                            paths.append(path)
+                            if len(paths) >= MAX_NOTES:
+                                break
+                if len(paths) >= MAX_NOTES:
+                    break
+                cursor = page.get("next_cursor")
+                if cursor is None:
+                    break
+        except Exception as error:
+            failures += 1
+            if len(REFRESH_ERRORS) < 3:
+                REFRESH_ERRORS.append(basename(folder) + ": " +
+                                      clean_line(str(error) or repr(error), 60))
     result = {"version": 1, "notes": [],
               "favorites": list(old_index.get("favorites", [])),
               "recent": list(old_index.get("recent", [])),
-              "folders": list(old_index.get("folders", [])), "root": normalize_path(root)}
-    paths = [item.get("path", "") for item in old_index.get("notes", [])
-             if is_note_path(item.get("path", "")) and inside(root, item.get("path", ""))]
-    failures = 0
+              "folders": folders, "root": root}
+    old_notes = {item.get("path", "").lower(): item
+                 for item in old_index.get("notes", [])}
     paths.sort(key=lambda value: value.lower())
     for position, path in enumerate(paths):
         gc.collect()
@@ -499,9 +542,9 @@ def rebuild_index(width, height, root, old_index):
         except Exception as error:
             failures += 1
             if len(REFRESH_ERRORS) < 3:
-                detail = clean_line(str(error) or repr(error), 60)
-                REFRESH_ERRORS.append(basename(path) + ": " + detail)
-            old = note_item(old_index, path)
+                REFRESH_ERRORS.append(basename(path) + ": " +
+                                      clean_line(str(error) or repr(error), 60))
+            old = old_notes.get(path.lower())
             has_copy = any(file_size(candidate) >= 0 for candidate in
                            (path, path + ".tmp", path + ".bak"))
             if old is not None and has_copy:
@@ -510,7 +553,7 @@ def rebuild_index(width, height, root, old_index):
                 except ValueError:
                     pass
         if position % 4 == 0 or position + 1 == len(paths):
-            progress(width, height, "Indexing notes", position + 1, len(paths), basename(path))
+            progress(width, height, "Scanning vault", position + 1, len(paths), basename(path))
         if position % 8 == 7:
             gc.collect()
     valid = {item.get("path", "").lower(): True for item in result["notes"]}
@@ -1729,7 +1772,7 @@ def settings_screen(width, height, config, index):
                 message(width, height, "Could not clear recent", str(error))
         elif choice == 4:
             index, failures, limited = rebuild_index(width, height, config["root"], index)
-            message(width, height, "Index refreshed", "Refreshed {} known notes.{}".format(
+            message(width, height, "Index refreshed", "Indexed {} discovered notes.{}".format(
                 len(index["notes"]), refresh_failure_text(failures)))
     return index
 
