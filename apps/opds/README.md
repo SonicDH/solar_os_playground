@@ -17,6 +17,7 @@ book reading to SolarOS Reader.
 - Cooperatively precache nearby catalog pages without freezing input.
 - Filter downloads to EPUB, plain text, and Markdown formats supported by
   SolarOS Reader.
+- Open a selected downloaded book directly in its registered reader app.
 
 Server profiles and credentials are stored in `servers.json` beside the
 installed script. To Read and download-history records are stored there as
@@ -39,15 +40,14 @@ is upgraded or removed.
 - `s`: add or remove a compatible book from To Read.
 - In Manage Servers, `a` adds and `x` removes a server.
 - Escape or `q`: go back or quit.
+- In Downloaded, `Enter` opens the selected local book in SolarOS Reader.
 
-Open downloaded books through Files or from a shell with:
+Downloaded books can also be opened from a shell with:
 
 ```text
 reader /Books/book-name.epub
 ```
 
-SolarOS does not currently expose an application-handoff API to a running
-Python script, so OPDS Browser cannot launch Reader itself.
 
 ## Limits
 
@@ -57,6 +57,6 @@ reading-progress synchronization are intentionally omitted.
 
 ## Requirements
 
-OPDS Browser requires SolarOS 4.8.4 or newer, Wi-Fi, and the Python and
-Playground packages. It uses the streaming `solaros.http` API and the terminal
-UI, so it does not require a graphical display or an SD card.
+OPDS Browser requires SolarOS 4.13.6 or newer, Wi-Fi, and the Python and
+Playground packages. It uses the streaming `solaros.http` and app handoff APIs
+and the terminal UI, so it does not require a graphical display or an SD card.

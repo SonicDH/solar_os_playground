@@ -19,6 +19,7 @@ conversion and switching vaults cannot mix their note lists.
 - Note creation, deletion, renaming, and moving
 - Folder creation, renaming, and safe deletion
 - Exact wiki-link updates when a note is renamed
+- Recursive vault refresh that discovers added files and removes deleted files
 - Import and in-place indexing of files copied onto the device
 - Atomic note, configuration, and index writes
 - UTF-8-aware 32 KiB editor limit
@@ -88,11 +89,13 @@ Deleting a folder moves every indexed note beneath it to the vault-root
 numbered filename. A folder containing unindexed files is left in place if it
 cannot safely be emptied.
 
-## Storage limitations
+## Storage
 
-SolarOS Python currently has no directory-list API. Flint's vault browser is
-therefore populated from its saved index. Notes created by either Flint edition
-are indexed automatically. After transferring another note using Files or FTP,
-run `flint-tui --add-file /path/to/note.md`.
+The vault browser is populated from Flint's saved index. Use **Refresh index**
+after transferring files through Files, FTP, or another app; refresh recursively
+discovers supported files, updates note metadata, and removes deleted files from
+the index. The index supports up to 512 notes. Notes created by either Flint
+edition are indexed automatically. The `--add-file` and `--add-list` commands
+remain available for direct imports.
 
 Flint stores plaintext Markdown and does not claim to encrypt the vault.

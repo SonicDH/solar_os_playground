@@ -1,13 +1,13 @@
 {
   "id": "rss",
   "name": "RSS Reader",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "runtime": "python",
   "entry": "rss.py",
   "category": "utilities",
   "description": "Offline-first RSS and Atom reader with aggregate, per-feed, and cached article views.",
   "author": "Victor Khaze",
-  "min_solaros": "4.8.4",
+  "min_solaros": "4.13.6",
   "tags": ["atom", "feeds", "news", "offline", "rss"],
   "requires": ["wifi"]
 }

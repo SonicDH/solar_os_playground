@@ -1040,10 +1040,20 @@ def downloads_loop(servers, downloads):
     for record in downloads:
         display.append({"title": record.get("title", "Untitled"),
                         "subtitle": server_name(servers, record.get("server_id")) + " · " + record.get("path", "")})
-    selected, unused = list_loop("Downloaded", display, "Enter location  q back")
+    selected, unused = list_loop("Downloaded", display, "Enter read  q back")
     if selected is not None:
-        message("Downloaded book", downloads[selected].get("path", "Unknown path"), "Press any key")
-        wait_key()
+        path = downloads[selected].get("path", "")
+        if not path or not file_exists(path):
+            message("Book unavailable", path or "No local path is recorded for this download.",
+                    "Press any key")
+            wait_key()
+            return
+        if not solaros.apps.can_open(path):
+            message("Reader unavailable", "No installed app can open this book type.",
+                    "Press any key")
+            wait_key()
+            return
+        solaros.apps.open(path)
 
 
 def main():
